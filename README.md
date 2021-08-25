@@ -40,10 +40,10 @@ text_sensor:
       - name: TOGGLE
         transitions:
           - ON -> OFF
-          - OFF -> NO
+          - OFF -> ON
 ```
 
-And to transition between states it you'll need to provide some input, e.g:
+And to transition between states it you'll need to trigger the machine by providing input, e.g:
 
 ```yaml
 binary_sensor:
