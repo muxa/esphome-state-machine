@@ -1,5 +1,10 @@
 # esphome-state-machine
-[State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) implemented using text_sensor.
+A flexible [Finite-State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) implemented using text_sensor. It lets you model complex behaviours with limited inputs, such as:
+
+* Controlling dimmalbe light with a single button.
+* Controlling a garage door `cover` with a single button.
+* Controlling a `display` a button, such as flip through pages on click, and go into editing mode on hold.
+* And more...
 
 ## Installing
 
@@ -57,8 +62,8 @@ binary_sensor:
 * **states** (**Required**, list): The list of states that the state machine has.
 
   * **name** (**Required**, string): The name of the state. Must not repeat.
-  * **on_enter** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when entering this state. Note that any running state atuomations will be stopeed.
-  * **on_leave** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when leaving this state. Note that any running state atuomations will be stopeed.
+  * **on_enter** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when entering this state. 
+  * **on_leave** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when leaving this state. 
 
 * **inputs** (**Required**, list): The list of inputs that the state machine supports with allowed state transitions.
 
@@ -66,8 +71,12 @@ binary_sensor:
   * **transitions** (**Required**, list): The list of allowed transitions. Short form is `FROM_STATE -> TO_STATE`, or advanced configuration:
     * **from** (**Required**, string): Source state that this input is allowed on.
     * **to** (**Required**, string): Target state that this input transitions to.
-    * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is performed.
-  * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is done by this input. This action is performed after transition-specific action.
+    * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is performed. 
+  * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is done by this input. This action is performed after transition-specific action. 
+
+> ### Note:
+>
+> Any running state machine automations (state, input and transition) will be stopped before running next automations. This is useful when there's a delayed transition in one of the automation and it needs to be cancelled because a new input was provided which results in a different transition. 
 
 ## `state_machine.transition` Action
 
