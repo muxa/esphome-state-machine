@@ -41,6 +41,24 @@ namespace esphome
     }
   };
 
+  class StateMachineTransitionActionTrigger : public Trigger<>
+  {
+  public:StateMachineTransitionActionTrigger(StateMachineTextSensor *text_sensor, StateTransition for_transition)
+    {
+      text_sensor->add_on_transition_callback(
+          [this, for_transition](StateTransition transition)
+          {
+            this->stop_action(); // stop any previous running actions
+            if (transition.from_state == for_transition.from_state 
+              && transition.input == for_transition.input 
+              && transition.to_state == for_transition.to_state)
+            {
+              this->trigger();
+            }
+          });
+    }
+  };
+
   class StateMachineInputActionTrigger : public Trigger<>
   {
   public:

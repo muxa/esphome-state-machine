@@ -63,10 +63,11 @@ binary_sensor:
 * **inputs** (**Required**, list): The list of inputs that the state machine supports with allowed state transitions.
 
   * **name** (**Required**, string): The name of the input. Must not repeat.
-  * **transitions** (**Required**, list): The list of allowed transitions.
-  * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is done by this input.
-
-The tranitions are defined as a list of mappings from one state to another, each in the form `FROM_STATE -> TO_STATE`. 
+  * **transitions** (**Required**, list): The list of allowed transitions. Short form is `FROM_STATE -> TO_STATE`, or advanced configuration:
+    * **from** (**Required**, string): Source state that this input is allowed on.
+    * **to** (**Required**, string): Target state that this input transitions to.
+    * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is performed.
+  * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is done by this input. This action is performed after transition-specific action.
 
 ## `state_machine.transition` Action
 

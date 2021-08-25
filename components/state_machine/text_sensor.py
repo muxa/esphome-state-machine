@@ -33,6 +33,10 @@ StateMachineInputActionTrigger = cg.global_ns.class_(
     "StateMachineInputActionTrigger", automation.Trigger.template()
 )
 
+StateMachineTransitionActionTrigger = cg.global_ns.class_(
+    "StateMachineTransitionActionTrigger", automation.Trigger.template()
+)
+
 StateMachineTransitionAction = cg.global_ns.class_("StateMachineTransitionAction", automation.Action)
 
 StateMachineTransitionCondition = cg.global_ns.class_("StateMachineTransitionCondition", automation.Condition)
@@ -45,12 +49,12 @@ CONF_TRANSITIONS_KEY = 'transitions'
 CONF_STATE_ON_ENTER_KEY = 'on_enter'
 CONF_STATE_ON_LEAVE_KEY = 'on_leave'
 CONF_INPUT_TRANSITIONS_KEY = 'transitions'
+CONF_INPUT_TRANSITIONS_ACTION_KEY = 'action'
 CONF_INPUT_ACTION_KEY = 'action'
 
 CONF_TRANSITION_FROM_KEY = 'from'
 CONF_TRANSITION_INPUT_KEY = 'input'
 CONF_TRANSITION_TO_KEY = 'to'
-CONF_TRANSITION_ACTION_KEY = 'action'
 
 
 def validate_transition(value):
@@ -59,6 +63,11 @@ def validate_transition(value):
             {
                 cv.Required(CONF_FROM): cv.string_strict,
                 cv.Required(CONF_TO): cv.string_strict,
+                cv.Optional(CONF_INPUT_TRANSITIONS_ACTION_KEY): automation.validate_automation(
+                    {
+                        cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(StateMachineTransitionActionTrigger),
+                    }
+                )
             }
         )(value)
     value = cv.string(value)
@@ -153,6 +162,22 @@ async def to_code(config):
                 await automation.build_automation(trigger, [], action)
 
     for input in config[CONF_INPUTS_KEY]:
+        if CONF_INPUT_TRANSITIONS_KEY in input:
+            for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
+                if CONF_INPUT_TRANSITIONS_ACTION_KEY in transition:
+                    for action in transition.get(CONF_INPUT_TRANSITIONS_ACTION_KEY, []):
+                        trigger = cg.new_Pvariable(
+                            action[CONF_TRIGGER_ID], 
+                            var, 
+                            cg.StructInitializer(
+                                StateTransition,
+                                ("from_state", transition[CONF_FROM]),
+                                ("input", input[CONF_NAME]),
+                                ("to_state", transition[CONF_TO]),
+                            )
+                        )
+                        await automation.build_automation(trigger, [], action)
+
         if CONF_INPUT_ACTION_KEY in input:
             for action in input.get(CONF_INPUT_ACTION_KEY, []):
                 trigger = cg.new_Pvariable(
