@@ -67,6 +67,7 @@ namespace esphome
       text_sensor->add_on_transition_callback(
           [this, input](StateTransition transition)
           {
+            this->stop_action(); // stop any previous running actions
             if (transition.input == input)
             {
               this->trigger();
