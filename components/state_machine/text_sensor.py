@@ -1,3 +1,5 @@
+import logging
+import urllib.parse
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import automation
@@ -10,6 +12,8 @@ from esphome.const import (
     CONF_FROM,
     CONF_TO,
 )
+
+log = logging.getLogger("state_machine")
 
 AUTO_LOAD = ["text_sensor"]
 
@@ -77,6 +81,23 @@ def validate_transition(value):
     a, b = a.strip(), b.strip()
     return validate_transition({CONF_FROM: a, CONF_TO: b})
 
+def output_graph(config):    
+    graph_data = f"digraph \"{config[CONF_NAME]}\" {{\n"
+    graph_data = graph_data + "  node [shape=ellipse];\n"
+    for input in config[CONF_INPUTS_KEY]:
+        if CONF_INPUT_TRANSITIONS_KEY in input:
+            for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
+                graph_data = graph_data + f"  {transition[CONF_FROM]} -> {transition[CONF_TO]} [label={input[CONF_NAME]}];\n"
+
+    graph_data = graph_data + "}"
+
+    log.info(f"State Machine Diagram (for {config[CONF_NAME]}): https://quickchart.io/graphviz?graph={urllib.parse.quote(graph_data)}")
+
+    print()
+    print(graph_data)
+
+    return config
+
 CONFIG_SCHEMA = cv.All(
     text_sensor.TEXT_SENSOR_SCHEMA.extend(
         {
@@ -117,7 +138,8 @@ CONFIG_SCHEMA = cv.All(
             ),
             cv.Optional(CONF_INITIAL_STATE): cv.string_strict,
         }
-    )
+    ),
+    output_graph
 )
 
 async def to_code(config):

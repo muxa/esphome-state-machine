@@ -125,7 +125,21 @@ on_...:
       - logger.log: Turned on by toggle
 ```
 
-## More examples
+## Diagrams
+
+When compiling or validating your YAML a state machine diagram will be generated using [DOT notation](https://en.wikipedia.org/wiki/DOT_(graph_description_language)), with a link to view the diagram, e.g:
+
+```
+INFO State Machine Diagram (for On/Off Toggle State Machine): https://quickchart.io/graphviz?graph=digraph%20%22On/Off%20Toggle%20State%20Machine%22%20%7B%0A%20%20node%20%5Bshape%3Dellipse%5D%3B%0A%20%20ON%20-%3E%20OFF%20%5Blabel%3DTOGGLE%5D%3B%0A%20%20OFF%20-%3E%20ON%20%5Blabel%3DTOGGLE%5D%3B%0A%7D
+
+digraph "On/Off Toggle State Machine" {
+  node [shape=ellipse];
+  ON -> OFF [label=TOGGLE];
+  OFF -> ON [label=TOGGLE];
+}
+```
+
+## All Examples
 
 ### Simple Toggle
 
