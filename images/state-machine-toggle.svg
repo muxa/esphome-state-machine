@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="211pt" height="51pt" viewBox="0.00 0.00 211.47 50.76">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 46.7645)">
+<title>On/Off Toggle State Machine</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-46.7645 207.4665,-46.7645 207.4665,4 -4,4"/>
+<!-- ON -->
+<g id="node1" class="node">
+<title>ON</title>
+<ellipse fill="none" stroke="#000000" cx="27" cy="-24.7645" rx="27" ry="18"/>
+<text text-anchor="middle" x="27" y="-20.5645" font-family="Times,serif" font-size="14.00" fill="#000000">ON</text>
+</g>
+<!-- OFF -->
+<g id="node2" class="node">
+<title>OFF</title>
+<ellipse fill="none" stroke="#000000" cx="174.722" cy="-24.7645" rx="28.991" ry="18"/>
+<text text-anchor="middle" x="174.722" y="-20.5645" font-family="Times,serif" font-size="14.00" fill="#000000">OFF</text>
+</g>
+<!-- ON&#45;&gt;OFF -->
+<g id="edge1" class="edge">
+<title>ON-&gt;OFF</title>
+<path fill="none" stroke="#000000" d="M54.0945,-24.7645C76.935,-24.7645 109.9115,-24.7645 135.6149,-24.7645"/>
+<polygon fill="#000000" stroke="#000000" points="135.7792,-28.2646 145.7792,-24.7645 135.7791,-21.2646 135.7792,-28.2646"/>
+<text text-anchor="middle" x="99.9888" y="-28.9645" font-family="Times,serif" font-size="14.00" fill="#000000">TOGGLE</text>
+</g>
+<!-- OFF&#45;&gt;ON -->
+<g id="edge2" class="edge">
+<title>OFF-&gt;ON</title>
+<path fill="none" stroke="#000000" d="M153.0139,-12.8424C145.3383,-9.2455 136.4924,-5.7734 127.9776,-3.9645 103.6418,1.2055 96.2982,1.3795 72,-3.9645 67.1089,-5.0402 62.1164,-6.7015 57.3213,-8.6266"/>
+<polygon fill="#000000" stroke="#000000" points="55.5617,-5.5788 47.8516,-12.8456 58.4105,-11.9729 55.5617,-5.5788"/>
+<text text-anchor="middle" x="99.9888" y="-7.9645" font-family="Times,serif" font-size="14.00" fill="#000000">TOGGLE</text>
+</g>
+</g>
+</svg>

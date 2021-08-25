@@ -26,7 +26,7 @@ The basic state machine configuration involves providing:
 
 Example for a simple on/off toggle state machine:
 
-![Toggle State Machine Diagram](images/state-machine-toggle.png)
+![Toggle State Machine Diagram](images/state-machine-toggle.svg)
 
 ```yaml
 text_sensor:
@@ -143,7 +143,7 @@ digraph "On/Off Toggle State Machine" {
 
 ### Simple Toggle
 
-![Simple Toggle State Machine Diagram](images/state-machine-toggle.png)
+![Simple Toggle State Machine Diagram](images/state-machine-toggle.svg)
 
 This example illustrates toggling an LED using a button.
 
@@ -151,7 +151,7 @@ See [toggle_example.yaml](toggle_example.yaml).
 
 ### Button Controlled Dimmable Light
 
-![Button Controlled Dimmable Light State Machine Diagram](images/state-machine-brightness.png)
+![Button Controlled Dimmable Light State Machine Diagram](images/state-machine-brightness.svg)
 
 This example models a single button control for a dimmable light with the following functionality:
 * CLICK to toggle ON of OFF
