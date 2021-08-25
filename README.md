@@ -115,3 +115,16 @@ on_...:
     then:
       - logger.log: Turned on by toggle
 ```
+
+## More examples
+
+### Button Controlled Dimmable Light
+
+![Button Controlled Dimmable Light State Machine Diagram](images/state-machine-brightness.png)
+
+This example models a single button control for a dimmable light with the following functionality:
+* CLICK to toggle ON of OFF
+* HOLD to go into EDITING mode to adjust brightness with a CLICK.
+
+See [dimmable_light_example.yaml](dimmable_light_example.yaml).
+
