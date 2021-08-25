@@ -20,10 +20,13 @@ The basic state machine configuration involves providing:
 * A list of allowed `transitions` for each input.
 
 Example for a simple on/off toggle state machine:
+
+![Toggle State Machine Diagram](images/state-machine-toggle.png)
+
 ```yaml
 text_sensor:
   - platform: state_machine
-    name: State Machine
+    name: On/Off Toggle State Machine
     initial_state: OFF
     states:
       - OFF
