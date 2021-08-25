@@ -32,10 +32,10 @@ Example for a simple on/off toggle state machine:
 text_sensor:
   - platform: state_machine
     name: On/Off Toggle State Machine
-    initial_state: OFF
+    initial_state: "OFF"
     states:
-      - OFF
-      - ON
+      - "OFF"
+      - "ON"
     inputs:
       - name: TOGGLE
         transitions:
@@ -118,9 +118,9 @@ on_...:
     condition:
       state_machine.transition:
         id: sm1
-        from: OFF
+        from: "OFF"
         trigger: TOGGLE
-        to: ON
+        to: "ON"
     then:
       - logger.log: Turned on by toggle
 ```
