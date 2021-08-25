@@ -32,3 +32,5 @@
 *.app
 __pycache__
 .DS_Store
+toggle_example
+.esphome
