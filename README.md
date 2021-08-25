@@ -127,6 +127,14 @@ on_...:
 
 ## More examples
 
+### Simple Toggle
+
+![Simple Toggle State Machine Diagram](images/state-machine-toggle.png)
+
+This example illustrates toggling an LED using a button.
+
+See [toggle_example.yaml](toggle_example.yaml).
+
 ### Button Controlled Dimmable Light
 
 ![Button Controlled Dimmable Light State Machine Diagram](images/state-machine-brightness.png)

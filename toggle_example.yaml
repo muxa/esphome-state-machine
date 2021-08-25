@@ -1,0 +1,41 @@
+esphome:
+  name: toggle_example
+  platform: ESP8266
+  board: d1_mini
+
+logger:
+  level: DEBUG
+
+external_components:  
+  - source: components
+
+text_sensor:
+  - platform: state_machine
+    name: On/Off Toggle State Machine
+    initial_state: "OFF"
+    states:
+      - name: "OFF"
+        on_enter:
+          - output.turn_off: led1
+      - name: "ON"
+        on_enter:
+          - output.turn_off: led1
+    inputs:
+      - name: TOGGLE
+        transitions:
+          - ON -> OFF
+          - OFF -> ON
+
+binary_sensor:
+  - platform: gpio
+    pin: D6
+    name: "Button"
+    filters:
+      - delayed_on: 100ms
+    on_press:
+      - state_machine.transition: TOGGLE
+
+output:
+  - platform: gpio
+    pin: D4
+    id: led1
