@@ -1,9 +1,9 @@
-# esphome-state-machine
-A flexible [Finite-State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) implemented using text_sensor. It lets you model complex behaviours with limited inputs, such as:
+# ESPHome State Machine
+A flexible [Finite-State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) implemented on top of a `text_sensor`. It lets you model complex behaviours with limited inputs, such as:
 
-* Controlling dimmalbe light with a single button.
+* Controlling dimmable `light` with a single button.
 * Controlling a garage door `cover` with a single button.
-* Controlling a `display` a button, such as flip through pages on click, and go into editing mode on hold.
+* Controlling a `display` a button (e.g. flip through pages on click, and go into editing mode on hold).
 * And more...
 
 ## Installing
@@ -43,7 +43,7 @@ text_sensor:
           - OFF -> NO
 ```
 
-And to use it you'll need to provide some input, e.g:
+And to transition between states it you'll need to provide some input, e.g:
 
 ```yaml
 binary_sensor:
@@ -100,7 +100,7 @@ Configuration options:
 
 ## `state_machine.transition` Condition
 
-This confition lets you check what transition last occurred.
+This condition lets you check what transition last occurred.
 
 ```yaml
 # in some trigger
