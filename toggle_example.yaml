@@ -19,7 +19,7 @@ text_sensor:
           - output.turn_off: led1
       - name: "ON"
         on_enter:
-          - output.turn_off: led1
+          - output.turn_on: led1
     inputs:
       - name: TOGGLE
         transitions:
@@ -28,7 +28,10 @@ text_sensor:
 
 binary_sensor:
   - platform: gpio
-    pin: D6
+    pin:
+      number: D6
+      mode: INPUT_PULLUP
+      inverted: True
     name: "Button"
     filters:
       - delayed_on: 100ms
@@ -37,5 +40,7 @@ binary_sensor:
 
 output:
   - platform: gpio
-    pin: D4
+    pin:
+      number: D4
+      inverted: True
     id: led1
