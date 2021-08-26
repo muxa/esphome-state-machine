@@ -1,9 +1,9 @@
 # ESPHome State Machine
-A flexible [Finite-State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) implemented on top of a `text_sensor`. It lets you model complex behaviours with limited inputs, such as:
+A flexible [Finite-State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) for [ESPHome](https://esphome.io/) implemented on top of a [text_sensor](https://esphome.io/components/text_sensor/index.html). It lets you model complex behaviours with limited inputs, such as:
 
 * Controlling dimmable `light` with a single button.
 * Controlling a garage door `cover` with a single button.
-* Controlling a `display` a button (e.g. flip through pages on click, and go into editing mode on hold).
+* Controlling a `display` with a button (e.g. flip through pages on click, and go into editing mode on hold).
 * And more...
 
 ## Installing
