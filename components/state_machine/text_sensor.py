@@ -91,10 +91,11 @@ def output_graph(config):
 
     graph_data = graph_data + "}"
 
-    log.info(f"State Machine Diagram (for {config[CONF_NAME]}): https://quickchart.io/graphviz?graph={urllib.parse.quote(graph_data)}")
-
+    print(f"State Machine Diagram (for {config[CONF_NAME]}):")
+    print(f"https://quickchart.io/graphviz?graph={urllib.parse.quote(graph_data)}")
     print()
     print(graph_data)
+    print()
 
     return config
 
