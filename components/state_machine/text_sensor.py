@@ -99,6 +99,20 @@ def output_graph(config):
 
     return config
 
+def validate_transitions(config):  
+    states = set(map(lambda x: x[CONF_NAME], config[CONF_STATES_KEY]))
+
+    for input in config[CONF_INPUTS_KEY]:
+
+        if CONF_INPUT_TRANSITIONS_KEY in input:
+            for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
+                if transition[CONF_FROM] not in states:
+                    raise cv.Invalid(f"Undefined `from` state \"{transition[CONF_FROM]}\" used in transition for input \"{input[CONF_NAME]}\"")
+                if transition[CONF_TO] not in states:
+                    raise cv.Invalid(f"Undefined `to` state \"{transition[CONF_TO]}\" used in transition for input \"{input[CONF_NAME]}\"")
+
+    return config
+
 def unique_names(items): 
     names = list(map(lambda x: x[CONF_NAME], items));
     if len(names) != len(set(names)):
@@ -146,6 +160,7 @@ CONFIG_SCHEMA = cv.All(
             cv.Optional(CONF_INITIAL_STATE): cv.string_strict,
         }
     ),
+    validate_transitions,
     output_graph
 )
 
