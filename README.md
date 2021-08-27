@@ -32,7 +32,6 @@ Example for a simple on/off toggle state machine:
 text_sensor:
   - platform: state_machine
     name: On/Off Toggle State Machine
-    initial_state: "OFF"
     states:
       - "OFF"
       - "ON"
@@ -58,7 +57,7 @@ binary_sensor:
 
 ## Configuration variables:
 
-* **initial_state** (**Required**, string): The intial state of the state machine.
+* **initial_state** (**Optional**, string): The intial state of the state machine. Defaults to first defined state.
 * **states** (**Required**, list): The list of states that the state machine has.
 
   * **name** (**Required**, string): The name of the state. Must not repeat.

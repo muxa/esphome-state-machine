@@ -12,7 +12,6 @@ external_components:
 text_sensor:
   - platform: state_machine
     name: On/Off Toggle State Machine
-    initial_state: "OFF"
     states:
       - name: "OFF"
         on_enter:

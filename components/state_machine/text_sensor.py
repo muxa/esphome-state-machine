@@ -187,7 +187,9 @@ async def to_code(config):
                     )
                 )
 
-    var = cg.new_Pvariable(config[CONF_ID], states, inputs, transitions, config[CONF_INITIAL_STATE])
+    initial_state = config[CONF_INITIAL_STATE] if CONF_INITIAL_STATE in config else states[0]
+
+    var = cg.new_Pvariable(config[CONF_ID], states, inputs, transitions, initial_state)
 
     for state in config[CONF_STATES_KEY]:
 
