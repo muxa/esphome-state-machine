@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="274pt" height="133pt" viewBox="0.00 0.00 274.39 132.80">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 128.8)">
+<title>Light Brightness State Machine</title>
+<polygon fill="#ffffff" stroke="transparent" points="-4,4 -4,-128.8 270.3934,-128.8 270.3934,4 -4,4"/>
+<!-- ON -->
+<g id="node1" class="node">
+<title>ON</title>
+<ellipse fill="none" stroke="#000000" cx="99.2214" cy="-106.8" rx="27" ry="18"/>
+<text text-anchor="middle" x="99.2214" y="-102.6" font-family="Times,serif" font-size="14.00" fill="#000000">ON</text>
+</g>
+<!-- OFF -->
+<g id="node2" class="node">
+<title>OFF</title>
+<ellipse fill="none" stroke="#000000" cx="43.2214" cy="-18" rx="28.991" ry="18"/>
+<text text-anchor="middle" x="43.2214" y="-13.8" font-family="Times,serif" font-size="14.00" fill="#000000">OFF</text>
+</g>
+<!-- ON&#45;&gt;OFF -->
+<g id="edge1" class="edge">
+<title>ON-&gt;OFF</title>
+<path fill="none" stroke="#000000" d="M73.6916,-100.7194C48.1481,-94.0576 11.4908,-82.723 3.2284,-70.8 -4.6479,-59.4343 3.6994,-47.0962 14.7668,-37.207"/>
+<polygon fill="#000000" stroke="#000000" points="17.1225,-39.8033 22.6975,-30.7939 12.7209,-34.3602 17.1225,-39.8033"/>
+<text text-anchor="middle" x="25.2179" y="-58.2" font-family="Times,serif" font-size="14.00" fill="#000000">CLICK</text>
+</g>
+<!-- EDITING -->
+<g id="node3" class="node">
+<title>EDITING</title>
+<ellipse fill="none" stroke="#000000" cx="156.2214" cy="-18" rx="50.3586" ry="18"/>
+<text text-anchor="middle" x="156.2214" y="-13.8" font-family="Times,serif" font-size="14.00" fill="#000000">EDITING</text>
+</g>
+<!-- ON&#45;&gt;EDITING -->
+<g id="edge4" class="edge">
+<title>ON-&gt;EDITING</title>
+<path fill="none" stroke="#000000" d="M109.9426,-90.0974C118.1682,-77.2829 129.6834,-59.3434 139.1693,-44.5653"/>
+<polygon fill="#000000" stroke="#000000" points="142.3094,-46.1527 144.7658,-35.8465 136.4185,-42.3714 142.3094,-46.1527"/>
+<text text-anchor="middle" x="152.6576" y="-58.2" font-family="Times,serif" font-size="14.00" fill="#000000">HOLD</text>
+</g>
+<!-- OFF&#45;&gt;ON -->
+<g id="edge2" class="edge">
+<title>OFF-&gt;ON</title>
+<path fill="none" stroke="#000000" d="M50.208,-35.7478C54.704,-46.3029 61.0403,-59.7459 68.2284,-70.8 71.0776,-75.1817 74.4156,-79.6002 77.8256,-83.7688"/>
+<polygon fill="#000000" stroke="#000000" points="75.1994,-86.083 84.3626,-91.4016 80.5161,-81.5296 75.1994,-86.083"/>
+<text text-anchor="middle" x="90.2179" y="-58.2" font-family="Times,serif" font-size="14.00" fill="#000000">CLICK</text>
+</g>
+<!-- EDITING&#45;&gt;ON -->
+<g id="edge5" class="edge">
+<title>EDITING-&gt;ON</title>
+<path fill="none" stroke="#000000" d="M168.5458,-35.6057C174.4353,-46.3609 178.8979,-60.0632 172.2214,-70.8 163.9152,-84.1575 149.0306,-92.7053 134.8589,-98.1005"/>
+<polygon fill="#000000" stroke="#000000" points="133.6012,-94.8311 125.2511,-101.3524 135.8454,-101.4616 133.6012,-94.8311"/>
+<text text-anchor="middle" x="194.6576" y="-58.2" font-family="Times,serif" font-size="14.00" fill="#000000">HOLD</text>
+</g>
+<!-- EDITING&#45;&gt;EDITING -->
+<g id="edge3" class="edge">
+<title>EDITING-&gt;EDITING</title>
+<path fill="none" stroke="#000000" d="M201.1367,-26.2253C214.2461,-25.941 224.4004,-23.1992 224.4004,-18 224.4004,-14.2631 219.1546,-11.7956 211.3363,-10.5977"/>
+<polygon fill="#000000" stroke="#000000" points="211.3858,-7.0904 201.1367,-9.7747 210.8227,-14.0678 211.3858,-7.0904"/>
+<text text-anchor="middle" x="245.3969" y="-13.8" font-family="Times,serif" font-size="14.00" fill="#000000">CLICK</text>
+</g>
+</g>
+</svg>

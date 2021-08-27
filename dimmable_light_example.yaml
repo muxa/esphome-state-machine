@@ -1,0 +1,76 @@
+esphome:
+  name: dimmable_light_example
+  platform: ESP8266
+  board: d1_mini
+
+logger:
+  level: DEBUG
+
+external_components:  
+  - source: components
+
+text_sensor:
+  - platform: state_machine
+    name: Light Brightness State Machine
+    initial_state: "OFF"
+    states:
+      - name: "OFF"
+        on_enter:
+          - light.turn_off: light1
+      - name: "ON"
+        on_enter:
+          - light.turn_on: light1
+      - EDITING
+    inputs:
+      - name: CLICK
+        transitions:
+          - ON -> OFF
+          - OFF -> ON
+          - from: EDITING
+            to: EDITING
+            action: # cycle through brightness levels
+              - lambda: |-
+                  auto call = id(light1).turn_on();
+                  auto brightness = id(light1).current_values.get_brightness();
+                  if (brightness > 0.21) {                    
+                    call.set_brightness(brightness - 0.2);
+                  } else {
+                    call.set_brightness(1.0);
+                  }
+                  call.perform();
+      - name: HOLD
+        transitions:
+          - ON -> EDITING
+          - EDITING -> ON
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D6
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Button"
+    on_click:
+      min_length: 50ms
+      max_length: 350ms
+      then:
+      - state_machine.transition: CLICK
+    on_multi_click:
+    - timing:
+        - ON for at least 1.5s
+      then:
+        - state_machine.transition: HOLD
+
+light:
+  - platform: monochromatic
+    name: "Light"
+    id: light1
+    default_transition_length: 300ms
+    output: led1
+
+output:
+  - platform: esp8266_pwm
+    pin:
+      number: D4
+      inverted: True
+    id: led1
