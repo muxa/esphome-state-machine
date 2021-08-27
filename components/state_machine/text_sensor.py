@@ -99,6 +99,12 @@ def output_graph(config):
 
     return config
 
+def unique_names(items): 
+    names = list(map(lambda x: x[CONF_NAME], items));
+    if len(names) != len(set(names)):
+        raise cv.Invalid("Items must have unique names")
+    return items
+
 CONFIG_SCHEMA = cv.All(
     text_sensor.TEXT_SENSOR_SCHEMA.extend(
         {
@@ -119,7 +125,7 @@ CONFIG_SCHEMA = cv.All(
                         ),
                     },
                     key=CONF_NAME
-                )), cv.Length(min=1)
+                )), cv.Length(min=1), unique_names
             ),
             cv.Required(CONF_INPUTS_KEY): cv.All(
                 cv.ensure_list(cv.maybe_simple_value(
@@ -135,7 +141,7 @@ CONFIG_SCHEMA = cv.All(
                         ),
                     },
                     key=CONF_NAME
-                )), cv.Length(min=1)
+                )), cv.Length(min=1), unique_names
             ),
             cv.Optional(CONF_INITIAL_STATE): cv.string_strict,
         }
