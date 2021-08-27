@@ -13,7 +13,6 @@ external_components:
   - source:
       type: git
       url: https://github.com/muxa/esphome-state-machine
-      ref: dev
 ```
 
 ## Configuration
