@@ -27,6 +27,8 @@ namespace esphome
 
     optional<StateTransition> transition(std::string input);
 
+    virtual void dump_config();
+
   private:
     std::vector<std::string> states_;
     std::vector<std::string> inputs_;

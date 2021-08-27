@@ -5,7 +5,6 @@ namespace esphome
 {
 
   static const char *const TAG = "state_machine";
-  static const char *const ESPSM_VERSION = "0.0.0";
 
   StateMachine::StateMachine(
       std::vector<std::string> states,
@@ -18,27 +17,28 @@ namespace esphome
     this->transitions_ = transitions;
     this->current_state_ = initial_state;
     this->last_transition_ = {};
+  }
 
-    ESP_LOGI(TAG, "State Machine version %s", ESPSM_VERSION);
+  void StateMachine::dump_config()
+  {
+    ESP_LOGCONFIG(TAG, "Initial State: %s", this->current_state_.c_str());
 
-    ESP_LOGD(TAG, "State machine ready. Current state: %s", this->current_state_.c_str());
-
-    ESP_LOGD(TAG, "States: %d", this->states_.size());
+    ESP_LOGCONFIG(TAG, "States: %d", this->states_.size());
     for (auto &state : this->states_)
     {
-      ESP_LOGD(TAG, "  %s", state.c_str());
+      ESP_LOGCONFIG(TAG, "  %s", state.c_str());
     }
 
-    ESP_LOGD(TAG, "Inputs: %d", this->inputs_.size());
+    ESP_LOGCONFIG(TAG, "Inputs: %d", this->inputs_.size());
     for (auto &input : this->inputs_)
     {
-      ESP_LOGD(TAG, "  %s", input.c_str());
+      ESP_LOGCONFIG(TAG, "  %s", input.c_str());
     }
 
-    ESP_LOGD(TAG, "Transitions: %d", this->transitions_.size());
+    ESP_LOGCONFIG(TAG, "Transitions: %d", this->transitions_.size());
     for (StateTransition &transition : this->transitions_)
     {
-      ESP_LOGD(TAG, "  %s - %s -> %s", transition.from_state.c_str(), transition.input.c_str(), transition.to_state.c_str());
+      ESP_LOGCONFIG(TAG, "  %s: %s -> %s", transition.input.c_str(), transition.from_state.c_str(), transition.to_state.c_str());
     }
   }
 

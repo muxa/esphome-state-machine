@@ -5,7 +5,6 @@ namespace esphome
 {
 
   static const char *const TAG = "state_machine.text_sensor";
-  static const char *const ESPSM_VERSION = "0.0.0";
 
   void StateMachineTextSensor::setup()
   {
@@ -15,6 +14,7 @@ namespace esphome
   void StateMachineTextSensor::dump_config()
   {
     LOG_TEXT_SENSOR("", "State Machine Text Sensor", this);
+    this->state_machine_->dump_config();
   }
 
   bool StateMachineTextSensor::transition(std::string input)
