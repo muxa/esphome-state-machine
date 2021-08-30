@@ -9,6 +9,10 @@ logger:
 external_components:
   - source: components
 
+text_sensor:
+  - platform: state_machine
+    name: On/Off Toggle State Machine
+
 state_machine:
   - name: On/Off Toggle State Machine
     states:

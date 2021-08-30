@@ -86,7 +86,7 @@ def validate_transition(value):
 def output_graph(config):
     if not config[CONF_DIAGRAM]:
         return config
-        
+
     graph_data = f"digraph \"{config[CONF_NAME] if CONF_NAME in config else 'State Machine'}\" {{\n"
     graph_data = graph_data + "  node [shape=ellipse];\n"
     for input in config[CONF_INPUTS_KEY]:
@@ -180,7 +180,7 @@ STATE_MACHINE_CONSUMER_SCHEMA = cv.Schema(
         cv.Required(CONF_ID): cv.use_id(StateMachineComponent)
     }
 )
-def consumer_schema():
+def state_machine_consumer_schema():
     return cv.Schema({
         cv.GenerateID(CONF_STATE_MACHINE_ID): cv.use_id(StateMachineComponent)
     })
