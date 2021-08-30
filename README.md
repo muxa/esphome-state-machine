@@ -122,6 +122,19 @@ on_...:
       - logger.log: Turned on by toggle
 ```
 
+## `text_sensor.state_machine` Sensor
+
+This is a simple text sensor to expose the current state of the state machine:
+
+```yaml
+text_sensor:
+  - platform: state_machine
+    name: On/Off Toggle State
+```
+
+* **state_machine_id** (*Optional*, [ID](https://esphome.io/guides/configuration-types.html#config-id)): The ID of the state machine.
+* All other options from [Text Sensor](https://esphome.io/components/text_sensor/index.html).
+
 ## Diagrams
 
 When compiling or validating your YAML a state machine diagram will be generated using [DOT notation](https://en.wikipedia.org/wiki/DOT_(graph_description_language)), with a link to view the diagram, e.g:

@@ -56,6 +56,8 @@ CONF_TRANSITION_FROM_KEY = 'from'
 CONF_TRANSITION_INPUT_KEY = 'input'
 CONF_TRANSITION_TO_KEY = 'to'
 
+CONF_STATE_MACHINE_ID = 'state_machine_id'
+
 def validate_transition(value):
     if isinstance(value, dict):
         return cv.Schema(
@@ -164,6 +166,20 @@ CONFIG_SCHEMA = cv.All(
     validate_transitions,
     output_graph
 )
+
+STATE_MACHINE_CONSUMER_SCHEMA = cv.Schema(
+    {
+        cv.Required(CONF_ID): cv.use_id(StateMachineComponent)
+    }
+)
+def consumer_schema():
+    return cv.Schema({
+        cv.GenerateID(CONF_STATE_MACHINE_ID): cv.use_id(StateMachineComponent)
+    })
+
+async def register_state_machine_consumer(var, config):
+    parent = await cg.get_variable(config[CONF_STATE_MACHINE_ID])
+    cg.add(var.set_state_machine(parent))
 
 async def to_code(config):
 
