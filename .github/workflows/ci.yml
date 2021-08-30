@@ -1,10 +1,16 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Python application
+name: ESPHome CI
 
 on:
   push:
+    branches:
+      - main
+      - dev
+      - 'releases/**'
+      - 'features/**'
+
   pull_request:
 
 jobs:
@@ -22,10 +28,6 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install esphome
-    - name: ESPHome Validate examples
-      run: |
-        esphome config toggle_example.yaml
-        esphome config dimmable_light_example.yaml
     - name: ESPHome Compile examples
       run: |
         esphome compile toggle_example.yaml
