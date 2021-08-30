@@ -60,7 +60,7 @@ binary_sensor:
 
   * **name** (**Required**, string): The name of the state. Must not repeat.
   * **on_enter** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when entering this state. 
-  * **on_leave** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when leaving this state. 
+  * **on_leave** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when leaving this state. It called before `on_enter` of the next state.
 
 * **inputs** (**Required**, list): The list of inputs that the state machine supports with allowed state transitions.
 
@@ -122,6 +122,19 @@ on_...:
       - logger.log: Turned on by toggle
 ```
 
+## `text_sensor.state_machine` Sensor
+
+This is a simple text sensor to expose the current state of the state machine:
+
+```yaml
+text_sensor:
+  - platform: state_machine
+    name: On/Off Toggle State
+```
+
+* **state_machine_id** (*Optional*, [ID](https://esphome.io/guides/configuration-types.html#config-id)): The ID of the state machine.
+* All other options from [Text Sensor](https://esphome.io/components/text_sensor/index.html).
+
 ## Diagrams
 
 When compiling or validating your YAML a state machine diagram will be generated using [DOT notation](https://en.wikipedia.org/wiki/DOT_(graph_description_language)), with a link to view the diagram, e.g:
@@ -140,13 +153,13 @@ digraph "On/Off Toggle State Machine" {
 To get just the url use this command:
 
 ```bash
-esphome config <config.yaml> 2>/dev/null | grep quickchart.io
+esphome config <config.yaml> 2>&1 | grep quickchart.io
 ```
 
 To open the diagram in Chrome use this command:
 
 ```bash
-esphome config <config.yaml> 2>/dev/null | grep quickchart.io | xargs open -n -a "Google Chrome" --args "-0"
+esphome config <config.yaml> 2>&1 | grep quickchart.io | xargs open -n -a "Google Chrome" --args "-0"
 ```
 
 

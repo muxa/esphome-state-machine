@@ -1,3 +1,5 @@
+import logging
+import os
 import urllib.parse
 import esphome.codegen as cg
 import esphome.config_validation as cv
@@ -10,6 +12,8 @@ from esphome.const import (
     CONF_FROM,
     CONF_TO,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 state_machine_ns = cg.esphome_ns.namespace("state_machine")
 
@@ -56,6 +60,8 @@ CONF_TRANSITION_FROM_KEY = 'from'
 CONF_TRANSITION_INPUT_KEY = 'input'
 CONF_TRANSITION_TO_KEY = 'to'
 
+CONF_STATE_MACHINE_ID = 'state_machine_id'
+
 def validate_transition(value):
     if isinstance(value, dict):
         return cv.Schema(
@@ -85,15 +91,14 @@ def output_graph(config):
                 graph_data = graph_data + f"  {transition[CONF_FROM]} -> {transition[CONF_TO]} [label={input[CONF_NAME]}];\n"
 
     graph_data = graph_data + "}"
+    graph_url = f"https://quickchart.io/graphviz?format=svg&graph={urllib.parse.quote(graph_data)}"
 
     if CONF_NAME in config:
-        print(f"State Machine Diagram (for {config[CONF_NAME]}):")
+        _LOGGER.info(f"State Machine Diagram (for {config[CONF_NAME]}):{os.linesep}{graph_url}{os.linesep}")
     else:
-        print(f"State Machine Diagram:")
-    print(f"https://quickchart.io/graphviz?graph={urllib.parse.quote(graph_data)}")
-    print()
-    print(graph_data)
-    print()
+        _LOGGER.info(f"State Machine Diagram:{os.linesep}{graph_url}{os.linesep}")
+
+    _LOGGER.info(f"DOT language graph:{os.linesep}{graph_data}")
 
     return config
 
@@ -165,6 +170,20 @@ CONFIG_SCHEMA = cv.All(
     output_graph
 )
 
+STATE_MACHINE_CONSUMER_SCHEMA = cv.Schema(
+    {
+        cv.Required(CONF_ID): cv.use_id(StateMachineComponent)
+    }
+)
+def consumer_schema():
+    return cv.Schema({
+        cv.GenerateID(CONF_STATE_MACHINE_ID): cv.use_id(StateMachineComponent)
+    })
+
+async def register_state_machine_consumer(var, config):
+    parent = await cg.get_variable(config[CONF_STATE_MACHINE_ID])
+    cg.add(var.set_state_machine(parent))
+
 async def to_code(config):
 
     cg.add_global(state_machine_ns.using)
@@ -197,17 +216,21 @@ async def to_code(config):
     if CONF_NAME in config:
         cg.add(var.set_name(config[CONF_NAME]))    
 
+    # setup on_leave automations first (to ensure they are executed before on_enter)
     for state in config[CONF_STATES_KEY]:
 
-        if CONF_STATE_ON_ENTER_KEY in state:
-            for action in state.get(CONF_STATE_ON_ENTER_KEY, []):
+        if CONF_STATE_ON_LEAVE_KEY in state:
+            for action in state.get(CONF_STATE_ON_LEAVE_KEY, []):
                 trigger = cg.new_Pvariable(
                     action[CONF_TRIGGER_ID], var, state[CONF_NAME]
                 )
                 await automation.build_automation(trigger, [], action)
 
-        if CONF_STATE_ON_LEAVE_KEY in state:
-            for action in state.get(CONF_STATE_ON_LEAVE_KEY, []):
+    # setup on_enter automations after on_leave
+    for state in config[CONF_STATES_KEY]:
+
+        if CONF_STATE_ON_ENTER_KEY in state:
+            for action in state.get(CONF_STATE_ON_ENTER_KEY, []):
                 trigger = cg.new_Pvariable(
                     action[CONF_TRIGGER_ID], var, state[CONF_NAME]
                 )
