@@ -153,13 +153,13 @@ digraph "On/Off Toggle State Machine" {
 To get just the url use this command:
 
 ```bash
-esphome config <config.yaml> 2>/dev/null | grep quickchart.io
+esphome config <config.yaml> 2>&1 | grep quickchart.io
 ```
 
 To open the diagram in Chrome use this command:
 
 ```bash
-esphome config <config.yaml> 2>/dev/null | grep quickchart.io | xargs open -n -a "Google Chrome" --args "-0"
+esphome config <config.yaml> 2>&1 | grep quickchart.io | xargs open -n -a "Google Chrome" --args "-0"
 ```
 
 

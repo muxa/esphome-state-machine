@@ -1,3 +1,5 @@
+import logging
+import os
 import urllib.parse
 import esphome.codegen as cg
 import esphome.config_validation as cv
@@ -10,6 +12,8 @@ from esphome.const import (
     CONF_FROM,
     CONF_TO,
 )
+
+_LOGGER = logging.getLogger(__name__)
 
 state_machine_ns = cg.esphome_ns.namespace("state_machine")
 
@@ -87,15 +91,14 @@ def output_graph(config):
                 graph_data = graph_data + f"  {transition[CONF_FROM]} -> {transition[CONF_TO]} [label={input[CONF_NAME]}];\n"
 
     graph_data = graph_data + "}"
+    graph_url = f"https://quickchart.io/graphviz?format=svg&graph={urllib.parse.quote(graph_data)}"
 
     if CONF_NAME in config:
-        print(f"State Machine Diagram (for {config[CONF_NAME]}):")
+        _LOGGER.info(f"State Machine Diagram (for {config[CONF_NAME]}):{os.linesep}{graph_url}{os.linesep}")
     else:
-        print(f"State Machine Diagram:")
-    print(f"https://quickchart.io/graphviz?graph={urllib.parse.quote(graph_data)}")
-    print()
-    print(graph_data)
-    print()
+        _LOGGER.info(f"State Machine Diagram:{os.linesep}{graph_url}{os.linesep}")
+
+    _LOGGER.info(f"DOT language graph:{os.linesep}{graph_data}")
 
     return config
 
