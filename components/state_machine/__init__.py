@@ -213,17 +213,21 @@ async def to_code(config):
     if CONF_NAME in config:
         cg.add(var.set_name(config[CONF_NAME]))    
 
+    # setup on_leave automations first (to ensure they are executed before on_enter)
     for state in config[CONF_STATES_KEY]:
 
-        if CONF_STATE_ON_ENTER_KEY in state:
-            for action in state.get(CONF_STATE_ON_ENTER_KEY, []):
+        if CONF_STATE_ON_LEAVE_KEY in state:
+            for action in state.get(CONF_STATE_ON_LEAVE_KEY, []):
                 trigger = cg.new_Pvariable(
                     action[CONF_TRIGGER_ID], var, state[CONF_NAME]
                 )
                 await automation.build_automation(trigger, [], action)
 
-        if CONF_STATE_ON_LEAVE_KEY in state:
-            for action in state.get(CONF_STATE_ON_LEAVE_KEY, []):
+    # setup on_enter automations after on_leave
+    for state in config[CONF_STATES_KEY]:
+
+        if CONF_STATE_ON_ENTER_KEY in state:
+            for action in state.get(CONF_STATE_ON_ENTER_KEY, []):
                 trigger = cg.new_Pvariable(
                     action[CONF_TRIGGER_ID], var, state[CONF_NAME]
                 )

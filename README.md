@@ -60,7 +60,7 @@ binary_sensor:
 
   * **name** (**Required**, string): The name of the state. Must not repeat.
   * **on_enter** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when entering this state. 
-  * **on_leave** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when leaving this state. 
+  * **on_leave** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when leaving this state. It called before `on_enter` of the next state.
 
 * **inputs** (**Required**, list): The list of inputs that the state machine supports with allowed state transitions.
 
