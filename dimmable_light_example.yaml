@@ -39,8 +39,28 @@ state_machine:
                   call.perform();
       - name: HOLD
         transitions:
-          - ON -> EDITING
-          - EDITING -> ON
+          - from: "ON"
+            to: EDITING
+            action: # single flash to indicate beginning of editing
+              - light.turn_on:
+                  id: light1
+                  effect: Strobe
+              - delay: 0.2s
+              - light.turn_off: light1
+              - light.turn_on:
+                  id: light1
+                  transition_length: 100ms
+          - from: EDITING
+            to: "ON"
+            action: # tripple flash to indicate end of editing
+              - light.turn_on:
+                  id: light1
+                  effect: Strobe
+              - delay: 0.6s
+              - light.turn_off: light1
+              - light.turn_on:
+                  id: light1
+                  transition_length: 100ms
     diagram: true
 
 binary_sensor:
@@ -65,8 +85,16 @@ light:
   - platform: monochromatic
     name: "Light"
     id: light1
-    default_transition_length: 300ms
+    default_transition_length: 200ms
     output: led1
+    effects:
+        - strobe:
+            name: Strobe
+            colors:
+              - state: true
+                duration: 100ms
+              - state: false
+                duration: 100ms
 
 output:
   - platform: esp8266_pwm
