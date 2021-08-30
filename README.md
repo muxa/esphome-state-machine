@@ -1,5 +1,5 @@
 # ESPHome State Machine
-A flexible [Finite-State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) for [ESPHome](https://esphome.io/) implemented on top of a [text_sensor](https://esphome.io/components/text_sensor/index.html). It lets you model complex behaviours with limited inputs, such as:
+A flexible [Finite-State Machine](https://en.wikipedia.org/wiki/Finite-state_machine) platform for [ESPHome](https://esphome.io/). It lets you model complex behaviours with limited inputs, such as:
 
 * Controlling dimmable `light` with a single button.
 * Controlling a garage door `cover` with a single button.
@@ -28,9 +28,8 @@ Example for a simple on/off toggle state machine:
 ![Toggle State Machine Diagram](images/state-machine-toggle.svg)
 
 ```yaml
-text_sensor:
-  - platform: state_machine
-    name: On/Off Toggle State Machine
+state_machine:
+  - name: On/Off Toggle State Machine
     states:
       - "OFF"
       - "ON"

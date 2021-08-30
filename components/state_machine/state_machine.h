@@ -1,42 +1,53 @@
 #pragma once
 
-#include <string>
-#include "esphome/core/optional.h"
-
+#include "esphome/core/component.h"
+#include "esphome/core/helpers.h"
 namespace esphome
 {
-
-  struct StateTransition
+  namespace state_machine
   {
-    std::string from_state;
-    std::string input;
-    std::string to_state;
-  };
 
-  class StateMachine
-  {
-  public:
-    StateMachine(
-        std::vector<std::string> states,
-        std::vector<std::string> inputs,
-        std::vector<StateTransition> transitions,
-        std::string initial_state);
+    struct StateTransition
+    {
+      std::string from_state;
+      std::string input;
+      std::string to_state;
+    };
 
-    std::string current_state() { return this->current_state_; }
-    optional<StateTransition> last_transition() { return this->last_transition_; }
+    class StateMachineComponent : public Component
+    {
+    public:
+      StateMachineComponent(
+          std::vector<std::string> states,
+          std::vector<std::string> inputs,
+          std::vector<StateTransition> transitions,
+          std::string initial_state);
 
-    optional<StateTransition> transition(std::string input);
+      const std::string &get_name() const;
+      void set_name(const std::string &name);
 
-    virtual void dump_config();
+      void dump_config() override;
 
-  private:
-    std::vector<std::string> states_;
-    std::vector<std::string> inputs_;
-    std::vector<StateTransition> transitions_;
-    std::string current_state_;
-    optional<StateTransition> last_transition_;
+      std::string current_state() { return this->current_state_; }
+      optional<StateTransition> last_transition() { return this->last_transition_; }
 
-    optional<StateTransition> get_transition(std::string input);
-  };
+      optional<StateTransition> transition(std::string input);
 
+      void add_on_transition_callback(std::function<void(StateTransition)> &&callback) { this->transition_callback_.add(std::move(callback)); }
+
+    protected:
+      std::string name_;
+
+      std::vector<std::string> states_;
+      std::vector<std::string> inputs_;
+      std::vector<StateTransition> transitions_;
+      std::string current_state_;
+      optional<StateTransition> last_transition_;
+
+      optional<StateTransition> get_transition(std::string input);
+
+      CallbackManager<void(StateTransition)> transition_callback_{};
+    };
+
+  } // namespace state_machine
 } // namespace esphome
