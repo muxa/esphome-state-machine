@@ -71,6 +71,8 @@ binary_sensor:
     * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is performed. 
   * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is done by this input. This action is performed after transition-specific action. 
 
+* **diagram** (*Optional*, boolean): If true, then a diagram of the state machine will be ouput to the console during validation/compilation of YAML. See **Diagrams** section below for more details. Defaults to `false`.
+
 > ### Note:
 >
 > Any running state machine automations (state, input and transition) will be stopped before running next automations. This is useful when there's a delayed transition in one of the automation and it needs to be cancelled because a new input was provided which results in a different transition. 
@@ -137,12 +139,20 @@ text_sensor:
 
 ## Diagrams
 
-When compiling or validating your YAML a state machine diagram will be generated using [DOT notation](https://en.wikipedia.org/wiki/DOT_(graph_description_language)), with a link to view the diagram, e.g:
+You have an option to generate a diagram of the state machine. You can enable this by adding `diagram: true` to the state machine yaml declaration (disabled by default).
+
+When compiling or validating your YAML a state machine diagram will be output to the console, in a form of:
+
+* A URL of the diagram image in SVG format
+* The "source code" of the diagram in [DOT language](https://en.wikipedia.org/wiki/DOT_(graph_description_language))
+
+Here's an example:
 
 ```
-State Machine Diagram (for On/Off Toggle State Machine):
-https://quickchart.io/graphviz?graph=digraph%20%22On/Off%20Toggle%20State%20Machine%22%20%7B%0A%20%20node%20%5Bshape%3Dellipse%5D%3B%0A%20%20ON%20-%3E%20OFF%20%5Blabel%3DTOGGLE%5D%3B%0A%20%20OFF%20-%3E%20ON%20%5Blabel%3DTOGGLE%5D%3B%0A%7D
+INFO State Machine Diagram (for On/Off Toggle State Machine):
+https://quickchart.io/graphviz?format=svg&graph=digraph%20%22On/Off%20Toggle%20State%20Machine%22%20%7B%0A%20%20node%20%5Bshape%3Dellipse%5D%3B%0A%20%20ON%20-%3E%20OFF%20%5Blabel%3DTOGGLE%5D%3B%0A%20%20OFF%20-%3E%20ON%20%5Blabel%3DTOGGLE%5D%3B%0A%7D
 
+INFO DOT language graph:
 digraph "On/Off Toggle State Machine" {
   node [shape=ellipse];
   ON -> OFF [label=TOGGLE];
@@ -162,6 +172,7 @@ To open the diagram in Chrome use this command:
 esphome config <config.yaml> 2>&1 | grep quickchart.io | xargs open -n -a "Google Chrome" --args "-0"
 ```
 
+> To get a PNG image instead of SVG change the `format` parameter in the image url from `svg` to `png`.
 
 ## All Examples
 
