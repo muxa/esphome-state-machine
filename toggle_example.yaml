@@ -23,6 +23,7 @@ state_machine:
         transitions:
           - ON -> OFF
           - OFF -> ON
+    diagram: true
 
 binary_sensor:
   - platform: gpio

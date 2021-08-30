@@ -45,6 +45,7 @@ StateMachineTransitionAction = state_machine_ns.class_("StateMachineTransitionAc
 
 StateMachineTransitionCondition = state_machine_ns.class_("StateMachineTransitionCondition", automation.Condition)
 
+CONF_DIAGRAM = 'diagram'
 CONF_INITIAL_STATE = 'initial_state'
 CONF_STATES_KEY = 'states'
 CONF_INPUTS_KEY = 'inputs'
@@ -82,7 +83,10 @@ def validate_transition(value):
     a, b = a.strip(), b.strip()
     return validate_transition({CONF_FROM: a, CONF_TO: b})
 
-def output_graph(config):    
+def output_graph(config):
+    if not config[CONF_DIAGRAM]:
+        return config
+        
     graph_data = f"digraph \"{config[CONF_NAME] if CONF_NAME in config else 'State Machine'}\" {{\n"
     graph_data = graph_data + "  node [shape=ellipse];\n"
     for input in config[CONF_INPUTS_KEY]:
@@ -164,6 +168,7 @@ CONFIG_SCHEMA = cv.All(
                 )), cv.Length(min=1), unique_names
             ),
             cv.Optional(CONF_INITIAL_STATE): cv.string_strict,
+            cv.Optional(CONF_DIAGRAM, default=False): cv.boolean
         }
     ).extend(cv.COMPONENT_SCHEMA),
     validate_transitions,

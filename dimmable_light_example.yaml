@@ -41,6 +41,7 @@ state_machine:
         transitions:
           - ON -> EDITING
           - EDITING -> ON
+    diagram: true
 
 binary_sensor:
   - platform: gpio
