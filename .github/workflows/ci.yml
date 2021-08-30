@@ -1,0 +1,32 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Python application
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install esphome
+    - name: ESPHome Validate examples
+      run: |
+        esphome config toggle_example.yaml
+        esphome config dimmable_light_example.yaml
+    - name: ESPHome Compile examples
+      run: |
+        esphome compile toggle_example.yaml
+        esphome compile dimmable_light_example.yaml
