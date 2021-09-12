@@ -9,6 +9,23 @@ namespace esphome
   namespace state_machine
   {
 
+    class StateMachineOnSetTrigger : public Trigger<>
+    {
+    public:
+      StateMachineOnSetTrigger(StateMachineComponent *state_machine, std::string state)
+      {
+        state_machine->add_on_set_callback(
+            [this, state](std::string new_state)
+            {
+              if (new_state == state)
+              {
+                this->stop_action(); // stop any previous running actions
+                this->trigger();
+              }
+            });
+      }
+    };
+
     class StateMachineOnEnterTrigger : public Trigger<>
     {
     public:
@@ -75,6 +92,21 @@ namespace esphome
               }
             });
       }
+    };
+
+    template <typename... Ts>
+    class StateMachineSetAction : public Action<Ts...>, public Parented<StateMachineComponent>
+    {
+    public:
+      StateMachineSetAction(std::string state)
+      {
+        this->state_ = state;
+      }
+
+      void play(Ts... x) override { this->parent_->set(this->state_); }
+
+    protected:
+      std::string state_;
     };
 
     template <typename... Ts>

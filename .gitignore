@@ -35,3 +35,4 @@ __pycache__
 toggle_example
 .esphome
 dimmable_light_example
+dual-switch-cover-example
