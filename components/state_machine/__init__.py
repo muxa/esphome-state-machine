@@ -25,6 +25,10 @@ StateMachineComponent = state_machine_ns.class_(
     "StateMachineComponent", cg.Component
 )
 
+StateMachineOnSetTrigger = state_machine_ns.class_(
+    "StateMachineOnSetTrigger", automation.Trigger.template()
+)
+
 StateMachineOnEnterTrigger = state_machine_ns.class_(
     "StateMachineOnEnterTrigger", automation.Trigger.template()
 )
@@ -41,6 +45,8 @@ StateMachineTransitionActionTrigger = state_machine_ns.class_(
     "StateMachineTransitionActionTrigger", automation.Trigger.template()
 )
 
+StateMachineSetAction = state_machine_ns.class_("StateMachineSetAction", automation.Action)
+
 StateMachineTransitionAction = state_machine_ns.class_("StateMachineTransitionAction", automation.Action)
 
 StateMachineTransitionCondition = state_machine_ns.class_("StateMachineTransitionCondition", automation.Condition)
@@ -51,6 +57,7 @@ CONF_STATES_KEY = 'states'
 CONF_INPUTS_KEY = 'inputs'
 CONF_TRANSITIONS_KEY = 'transitions'
 
+CONF_STATE_ON_SET_KEY = 'on_set'
 CONF_STATE_ON_ENTER_KEY = 'on_enter'
 CONF_STATE_ON_LEAVE_KEY = 'on_leave'
 CONF_INPUT_TRANSITIONS_KEY = 'transitions'
@@ -60,6 +67,8 @@ CONF_INPUT_ACTION_KEY = 'action'
 CONF_TRANSITION_FROM_KEY = 'from'
 CONF_TRANSITION_INPUT_KEY = 'input'
 CONF_TRANSITION_TO_KEY = 'to'
+
+CONF_STATE_KEY = 'state'
 
 CONF_STATE_MACHINE_ID = 'state_machine_id'
 
@@ -137,6 +146,11 @@ CONFIG_SCHEMA = cv.All(
                 cv.ensure_list(cv.maybe_simple_value(
                     {
                         cv.Required(CONF_NAME): cv.string_strict,
+                        cv.Optional(CONF_STATE_ON_SET_KEY): automation.validate_automation(
+                            {
+                                cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(StateMachineOnSetTrigger),
+                            }
+                        ),
                         cv.Optional(CONF_STATE_ON_ENTER_KEY): automation.validate_automation(
                             {
                                 cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(StateMachineOnEnterTrigger),
@@ -221,7 +235,17 @@ async def to_code(config):
     if CONF_NAME in config:
         cg.add(var.set_name(config[CONF_NAME]))    
 
-    # setup on_leave automations first (to ensure they are executed before on_enter)
+    # setup on_set automations first
+    for state in config[CONF_STATES_KEY]:
+
+        if CONF_STATE_ON_LEAVE_KEY in state:
+            for action in state.get(CONF_STATE_ON_SET_KEY, []):
+                trigger = cg.new_Pvariable(
+                    action[CONF_TRIGGER_ID], var, state[CONF_NAME]
+                )
+                await automation.build_automation(trigger, [], action)
+
+    # then setup on_leave automations (to ensure they are executed before on_enter)
     for state in config[CONF_STATES_KEY]:
 
         if CONF_STATE_ON_LEAVE_KEY in state:
@@ -269,6 +293,22 @@ async def to_code(config):
     await cg.register_component(var, config)
 
     cg.add(var.dump_config())
+
+@automation.register_action(
+    "state_machine.set",
+    StateMachineSetAction,
+    cv.maybe_simple_value(
+        {
+            cv.GenerateID(): cv.use_id(StateMachineComponent),
+            cv.Required(CONF_STATE_KEY): cv.string_strict,
+        },
+        key=CONF_STATE_KEY
+    ),
+)
+def state_machine_set_to_code(config, action_id, template_arg, args):
+    var = cg.new_Pvariable(action_id, template_arg, config[CONF_STATE_KEY])
+    yield cg.register_parented(var, config[CONF_ID])
+    yield var
 
 @automation.register_action(
     "state_machine.transition",

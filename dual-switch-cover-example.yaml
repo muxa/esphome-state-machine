@@ -1,0 +1,177 @@
+esphome:
+  name: dual-switch-cover-example
+  platform: ESP8266
+  board: d1_mini
+  on_boot:
+    then:
+      - logger.log: "BOOTING"
+      - if:
+          condition:
+            and:
+              - switch.is_on: switch_open
+              - switch.is_on: switch_close
+          then:
+            - logger.log: "Restoring sun tracker state"
+            - state_machine.set: SUN_TRACKER_ON
+
+logger:
+  level: DEBUG
+
+external_components:
+  - source: components
+
+text_sensor:
+  - platform: state_machine
+    name: Dual Switch Cover Control State Machine
+
+state_machine:
+  - name: "Dual Switch Cover Control"
+    id: switches_sm
+    initial_state: IDLE
+    states:
+      - name: IDLE
+        on_enter:
+          - cover.stop: louvres
+      - name: WAITING_CLOSE_BUTTON
+        on_enter:
+          - delay: 0.75s
+          - state_machine.transition: OPENING_TIMEOUT
+      - name: WAITING_OPEN_BUTTON
+        on_enter:
+          - delay: 0.75s
+          - state_machine.transition: CLOSING_TIMEOUT
+      - name: OPENING
+        on_enter:
+          - cover.open: louvres
+      - name: CLOSING
+        on_enter:
+          - cover.close: louvres
+      - name: SUN_TRACKER_ON
+        on_set:
+          - light.turn_on: light1
+        on_enter:
+          - light.turn_on: light1
+        on_leave:
+          - light.turn_off: light1
+    inputs:
+      - name: OPEN_ON
+        transitions:
+          - IDLE -> WAITING_CLOSE_BUTTON
+          - WAITING_OPEN_BUTTON -> SUN_TRACKER_ON
+          - CLOSING -> OPENING
+      - name: OPEN_OFF
+        transitions:
+          - OPENING -> IDLE
+          - WAITING_CLOSE_BUTTON -> IDLE
+          - SUN_TRACKER_ON -> WAITING_OPEN_BUTTON
+      - name: CLOSE_ON
+        transitions:
+          - IDLE -> WAITING_OPEN_BUTTON
+          - WAITING_CLOSE_BUTTON -> SUN_TRACKER_ON
+          - OPENING -> CLOSING
+      - name: CLOSE_OFF
+        transitions:
+          - CLOSING -> IDLE
+          - WAITING_OPEN_BUTTON -> IDLE
+          - SUN_TRACKER_ON -> WAITING_CLOSE_BUTTON
+      - name: OPENING_TIMEOUT
+        transitions:
+          - WAITING_CLOSE_BUTTON -> OPENING
+      - name: CLOSING_TIMEOUT
+        transitions:
+          - WAITING_OPEN_BUTTON -> CLOSING
+      - name: STOP
+        transitions:
+          - OPENING -> IDLE
+          - CLOSING -> IDLE
+    diagram: true
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D5
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Open Button"
+    filters:
+      - delayed_on: 100ms
+    on_press:
+      - switch.toggle: switch_open
+
+  - platform: gpio
+    pin:
+      number: D6
+      mode: INPUT #_PULLUP
+      inverted: False #True
+    name: "Open Button"
+    filters:
+      - delayed_on: 100ms
+    on_press:
+      - switch.toggle: switch_close
+
+switch:
+  - platform: gpio
+    pin: D1
+    name: "Open"
+    id: switch_open
+    on_turn_on:
+      - state_machine.transition: OPEN_ON
+    on_turn_off:
+      - state_machine.transition: OPEN_OFF
+
+  - platform: gpio
+    pin: D2
+    name: "Close"
+    id: switch_close
+    on_turn_on:
+      - state_machine.transition: CLOSE_ON
+    on_turn_off:
+      - state_machine.transition: CLOSE_OFF
+
+cover:
+  - platform: time_based
+    name: "Louvres"
+    id: louvres
+
+    device_class: shutter
+
+    open_action:
+      - logger.log: "Dummy action to OPEN louvres"
+      - light.turn_on:
+          id: light1
+          effect: Moving
+    open_duration: 9s
+
+    close_action:
+      - logger.log: "Dummy action to CLOSE louvres"
+      - light.turn_on:
+          id: light1
+          effect: Moving
+    close_duration: 8s
+
+    stop_action:
+      - logger.log: "Dummy action to STOP louvres"
+      - light.turn_off: light1
+      - state_machine.transition: STOP
+
+light:
+  - platform: monochromatic
+    name: "Light"
+    id: light1
+    default_transition_length: 200ms
+    output: led1
+    effects:
+      - strobe:
+          name: Moving
+          colors:
+            - state: true
+              duration: 250ms
+            - state: false
+              duration: 250ms
+
+output:
+  - platform: esp8266_pwm
+    pin:
+      number: D4
+      inverted: True
+    id: led1

@@ -61,6 +61,7 @@ binary_sensor:
   * **name** (**Required**, string): The name of the state. Must not repeat.
   * **on_enter** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when entering this state. 
   * **on_leave** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when leaving this state. It called before `on_enter` of the next state.
+  * **on_set** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when setting this state using `set` action or via `initial_state`. Will not trigger if new state is the same as current state.
 
 * **inputs** (**Required**, list): The list of inputs that the state machine supports with allowed state transitions.
 
@@ -96,6 +97,29 @@ Configuration options:
 
 * **id** (*Optional*, [ID](https://esphome.io/guides/configuration-types.html#config-id)): The ID of the state machine.
 * **input** (**Required**, string): The input to provide in order to transition to the next state.
+
+## `state_machine.set` Action
+
+This action allows resetting the state machine current state, without going through transitions. This can be useful when initial state is not really know until some sensor data is available. Another example is when there's a "emergency escape" transition from every state to a particular state and adding a transition from every other state just makes the machine messy.
+
+> Note that only the target state `on_set` automation will be triggered, and all other state machine automations (`on_enter`, `on_leave` and `action` of the inputs and transitions) will be skipped.
+
+```yaml
+# in some trigger
+on_...:
+  # Basic:
+  - state_machine.set: OPEN
+
+  # Advanced (if you have multiple state machines in one YAML)
+  - state_machine.set:
+      id: sm1
+      state: OPEN
+```
+
+Configuration options:
+
+* **id** (*Optional*, [ID](https://esphome.io/guides/configuration-types.html#config-id)): The ID of the state machine.
+* **state** (**Required**, string): The state to set state machine to bypassing transitions.
 
 ## `state_machine.transition` Condition
 
@@ -194,3 +218,13 @@ This example models a single button control for a dimmable light with the follow
 
 See [dimmable_light_example.yaml](dimmable_light_example.yaml).
 
+### Dual Switch Cover Control
+
+![Dual Switch Cover Control State Machine Diagram](images/state-machine-dual-switch-cover.svg)
+
+This example demonstrates using 2 switches to control a time-based cover:
+* Switch 1 ON: OPEN
+* Switch 2 ON: CLOSE
+* Both switches ON: enable Sun Tracker
+
+See [dual-switch-cover-example.yaml](dual-switch-cover-example.yaml).

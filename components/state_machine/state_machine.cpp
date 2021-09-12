@@ -27,11 +27,18 @@ namespace esphome
       this->name_ = name;
     }
 
+    void StateMachineComponent::setup()
+    {
+      auto initial_state = this->current_state_;
+      this->current_state_ = {};
+      this->set(initial_state);
+    }
+
     void StateMachineComponent::dump_config()
     {
       ESP_LOGCONFIG(TAG, "State Machine '%s'", this->name_.c_str());
 
-      ESP_LOGCONFIG(TAG, "Initial State: %s", this->current_state_.c_str());
+      ESP_LOGCONFIG(TAG, "Current State: %s", this->current_state_.c_str());
 
       ESP_LOGCONFIG(TAG, "States: %d", this->states_.size());
       for (auto &state : this->states_)
@@ -67,6 +74,21 @@ namespace esphome
       }
 
       return {};
+    }
+
+    void StateMachineComponent::set(std::string state)
+    {
+      if (std::find(this->states_.begin(), this->states_.end(), state) == this->states_.end())
+      {
+        ESP_LOGE(TAG, "Invalid state: %s", state.c_str());
+      }
+
+      if (state != this->current_state_)
+      {
+        ESP_LOGD(TAG, "State set to %s", state.c_str());
+        this->current_state_ = state;
+        this->set_callback_.call(state);
+      }
     }
 
     optional<StateTransition> StateMachineComponent::transition(std::string input)
