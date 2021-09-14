@@ -1,5 +1,5 @@
 esphome:
-  name: dimmable_light_example
+  name: dimmable-light-example
   platform: ESP8266
   board: d1_mini
 

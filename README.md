@@ -206,7 +206,7 @@ esphome config <config.yaml> 2>&1 | grep quickchart.io | xargs open -n -a "Googl
 
 This example illustrates toggling an LED using a button.
 
-See [toggle_example.yaml](toggle_example.yaml).
+See [toggle-example.yaml](toggle-example.yaml).
 
 ### Button Controlled Dimmable Light
 
@@ -216,7 +216,7 @@ This example models a single button control for a dimmable light with the follow
 * CLICK to toggle ON of OFF
 * HOLD to go into EDITING mode to adjust brightness with a CLICK.
 
-See [dimmable_light_example.yaml](dimmable_light_example.yaml).
+See [dimmable-light-example.yaml](dimmable-light-example.yaml).
 
 ### Dual Switch Cover Control
 

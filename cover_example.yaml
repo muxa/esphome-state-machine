@@ -1,0 +1,18 @@
+
+cover:
+  - platform: state_machine
+    state_machine_id: garage_sm
+    opening_states:
+      - OPENING
+    closing_states:
+      - CLOSING
+    open_states:
+      - OPEN
+      - OPEN_INTERRUPTED
+    closed_states:
+      - CLOSED
+    open_input: OPEN
+    stop_input: STOP
+    close_input: CLOSE
+    open_duration: 16s
+    close_duration: 16s
