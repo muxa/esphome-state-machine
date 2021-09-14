@@ -100,7 +100,7 @@ Configuration options:
 
 ## `state_machine.set` Action
 
-This action allows resetting the state machine current state, without going through transitions. This can be useful when initial state is not really know until some sensor data is available. Another example is when there's a "emergency escape" transition from every state to a particular state and adding a transition from every other state just makes the machine messy.
+This action allows resetting the state machine current state, without going through transitions. This can be useful when initial state is not really known until some sensor data is available. 
 
 > Note that only the target state `on_set` automation will be triggered, and all other state machine automations (`on_enter`, `on_leave` and `action` of the inputs and transitions) will be skipped.
 
