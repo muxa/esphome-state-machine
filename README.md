@@ -121,6 +121,30 @@ Configuration options:
 * **id** (*Optional*, [ID](https://esphome.io/guides/configuration-types.html#config-id)): The ID of the state machine.
 * **state** (**Required**, string): The state to set state machine to bypassing transitions.
 
+## `state_machine.state` Condition
+
+This condition lets you check what state the machine is currently in.
+
+```yaml
+# in some trigger
+on_...:
+  # Basic
+  if:
+    condition:
+      state_machine.state: "ON"
+    then:
+      - logger.log: Is ON
+
+  # Advanced
+  if:
+    condition:
+      state_machine.state:
+        id: sm1
+        value: "ON"
+    then:
+      - logger.log: Is ON
+```
+
 ## `state_machine.transition` Condition
 
 This condition lets you check what transition last occurred.

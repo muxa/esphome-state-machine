@@ -11,6 +11,8 @@ from esphome.const import (
     CONF_TRIGGER_ID,
     CONF_FROM,
     CONF_TO,
+    CONF_STATE,
+    CONF_VALUE
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -49,6 +51,7 @@ StateMachineSetAction = state_machine_ns.class_("StateMachineSetAction", automat
 
 StateMachineTransitionAction = state_machine_ns.class_("StateMachineTransitionAction", automation.Action)
 
+StateMachineStateCondition = state_machine_ns.class_("StateMachineStateCondition", automation.Condition)
 StateMachineTransitionCondition = state_machine_ns.class_("StateMachineTransitionCondition", automation.Condition)
 
 CONF_DIAGRAM = 'diagram'
@@ -67,8 +70,6 @@ CONF_INPUT_ACTION_KEY = 'action'
 CONF_TRANSITION_FROM_KEY = 'from'
 CONF_TRANSITION_INPUT_KEY = 'input'
 CONF_TRANSITION_TO_KEY = 'to'
-
-CONF_STATE_KEY = 'state'
 
 CONF_STATE_MACHINE_ID = 'state_machine_id'
 
@@ -300,13 +301,13 @@ async def to_code(config):
     cv.maybe_simple_value(
         {
             cv.GenerateID(): cv.use_id(StateMachineComponent),
-            cv.Required(CONF_STATE_KEY): cv.string_strict,
+            cv.Required(CONF_STATE): cv.string_strict,
         },
-        key=CONF_STATE_KEY
+        key=CONF_STATE
     ),
 )
 def state_machine_set_to_code(config, action_id, template_arg, args):
-    var = cg.new_Pvariable(action_id, template_arg, config[CONF_STATE_KEY])
+    var = cg.new_Pvariable(action_id, template_arg, config[CONF_STATE])
     yield cg.register_parented(var, config[CONF_ID])
     yield var
 
@@ -325,6 +326,24 @@ def state_machine_transition_to_code(config, action_id, template_arg, args):
     var = cg.new_Pvariable(action_id, template_arg, config[CONF_TRANSITION_INPUT_KEY])
     yield cg.register_parented(var, config[CONF_ID])
     yield var
+
+@automation.register_condition(
+    "state_machine.state",
+    StateMachineStateCondition,
+    cv.maybe_simple_value(
+        {
+            cv.GenerateID(): cv.use_id(StateMachineComponent),
+            cv.Required(CONF_VALUE): cv.templatable(cv.string_strict)
+        },
+        key=CONF_VALUE
+    ),
+)
+async def state_machine_state_condition_to_code(config, condition_id, template_arg, args):
+    paren = await cg.get_variable(config[CONF_ID])    
+    var = cg.new_Pvariable(condition_id, template_arg, paren)
+    cg.add(var.set_value(await cg.templatable(config[CONF_VALUE], args, cg.std_string)))
+    return var
+
 
 @automation.register_condition(
     "state_machine.transition",
