@@ -125,6 +125,23 @@ namespace esphome
     };
 
     template <typename... Ts>
+    class StateMachineStateCondition : public Condition<Ts...>
+    {
+    public:
+      explicit StateMachineStateCondition(StateMachineComponent *parent) : parent_(parent) {}
+
+      TEMPLATABLE_VALUE(std::string, value)
+
+      bool check(Ts... x) override
+      {
+        return this->value_.value(x...) == this->parent_->current_state();
+      }
+
+    protected:
+      StateMachineComponent *parent_;
+    };
+
+    template <typename... Ts>
     class StateMachineTransitionCondition : public Condition<Ts...>
     {
     public:

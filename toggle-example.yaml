@@ -1,5 +1,5 @@
 esphome:
-  name: toggle_example
+  name: toggle-example
   platform: ESP8266
   board: d1_mini
 

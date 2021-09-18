@@ -100,7 +100,7 @@ Configuration options:
 
 ## `state_machine.set` Action
 
-This action allows resetting the state machine current state, without going through transitions. This can be useful when initial state is not really know until some sensor data is available. Another example is when there's a "emergency escape" transition from every state to a particular state and adding a transition from every other state just makes the machine messy.
+This action allows resetting the state machine current state, without going through transitions. This can be useful when initial state is not really known until some sensor data is available. 
 
 > Note that only the target state `on_set` automation will be triggered, and all other state machine automations (`on_enter`, `on_leave` and `action` of the inputs and transitions) will be skipped.
 
@@ -120,6 +120,30 @@ Configuration options:
 
 * **id** (*Optional*, [ID](https://esphome.io/guides/configuration-types.html#config-id)): The ID of the state machine.
 * **state** (**Required**, string): The state to set state machine to bypassing transitions.
+
+## `state_machine.state` Condition
+
+This condition lets you check what state the machine is currently in.
+
+```yaml
+# in some trigger
+on_...:
+  # Basic
+  if:
+    condition:
+      state_machine.state: "ON"
+    then:
+      - logger.log: Is ON
+
+  # Advanced
+  if:
+    condition:
+      state_machine.state:
+        id: sm1
+        value: "ON"
+    then:
+      - logger.log: Is ON
+```
 
 ## `state_machine.transition` Condition
 
@@ -206,7 +230,7 @@ esphome config <config.yaml> 2>&1 | grep quickchart.io | xargs open -n -a "Googl
 
 This example illustrates toggling an LED using a button.
 
-See [toggle_example.yaml](toggle_example.yaml).
+See [toggle-example.yaml](toggle-example.yaml).
 
 ### Button Controlled Dimmable Light
 
@@ -216,7 +240,7 @@ This example models a single button control for a dimmable light with the follow
 * CLICK to toggle ON of OFF
 * HOLD to go into EDITING mode to adjust brightness with a CLICK.
 
-See [dimmable_light_example.yaml](dimmable_light_example.yaml).
+See [dimmable-light-example.yaml](dimmable-light-example.yaml).
 
 ### Dual Switch Cover Control
 
