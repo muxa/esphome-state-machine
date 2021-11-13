@@ -69,10 +69,10 @@ binary_sensor:
   * **transitions** (**Required**, list): The list of allowed transitions. Short form is `FROM_STATE -> TO_STATE`, or advanced configuration:
     * **from** (**Required**, string): Source state that this input is allowed on.
     * **to** (**Required**, string): Target state that this input transitions to.
-    * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is performed. 
-  * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is done by this input. This action is performed after transition-specific action. 
+    * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is performed. This action is performed before state's `on_leave` action is called.
+  * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is done by this input. This action is performed after transition-specific action and before state's `on_leave` action is called.
 
-* **diagram** (*Optional*, boolean): If true, then a diagram of the state machine will be ouput to the console during validation/compilation of YAML. See **Diagrams** section below for more details. Defaults to `false`.
+* **diagram** (*Optional*, boolean): If true, then a diagram of the state machine will be output to the console during validation/compilation of YAML. See **Diagrams** section below for more details. Defaults to `false`.
 
 > ### Note:
 >
