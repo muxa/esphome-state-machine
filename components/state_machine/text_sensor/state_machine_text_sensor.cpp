@@ -14,6 +14,11 @@ namespace esphome
             [this](StateTransition transition)
             {
               this->update();
+            });      
+      this->state_machine_->add_on_set_callback(
+            [this](std::string state)
+            {
+              this->update();
             });
     }
 
