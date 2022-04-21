@@ -84,7 +84,7 @@ state_machine:
         transitions:
           - OPENING -> IDLE
           - CLOSING -> IDLE
-    diagram: true
+    diagram: mermaid
 
 binary_sensor:
   - platform: gpio
