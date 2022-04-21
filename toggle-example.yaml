@@ -27,7 +27,7 @@ state_machine:
         transitions:
           - ON -> OFF
           - OFF -> ON
-    diagram: true
+    diagram: mermaid
 
 binary_sensor:
   - platform: gpio

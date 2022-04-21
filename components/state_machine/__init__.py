@@ -94,9 +94,36 @@ def validate_transition(value):
     return validate_transition({CONF_FROM: a, CONF_TO: b})
 
 def output_graph(config):
-    if not config[CONF_DIAGRAM]:
+    if config[CONF_DIAGRAM] == None or config[CONF_DIAGRAM] == False:
         return config
 
+    if config[CONF_DIAGRAM] == "mermaid":
+        output_mermaid_graph(config)
+    else:
+        output_dot_graph(config)
+
+    return config
+
+def output_mermaid_graph(config):
+    graph_data = f"stateDiagram-v2{os.linesep}"
+    graph_data = graph_data + f"  direction LR{os.linesep}"
+    initial_state = config[CONF_INITIAL_STATE] if CONF_INITIAL_STATE in config else config[CONF_STATES_KEY][0][CONF_NAME]
+    graph_data = graph_data + f"  [*] --> {initial_state}{os.linesep}"
+    for input in config[CONF_INPUTS_KEY]:
+        if CONF_INPUT_TRANSITIONS_KEY in input:
+            for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
+                graph_data = graph_data + f"  {transition[CONF_FROM]} --> {transition[CONF_TO]}: {input[CONF_NAME]}{os.linesep}"
+
+    graph_url = "" # f"https://quickchart.io/graphviz?format=svg&graph={urllib.parse.quote(graph_data)}"
+
+    if CONF_NAME in config:
+        _LOGGER.info(f"State Machine Diagram (for {config[CONF_NAME]}):{os.linesep}{graph_url}{os.linesep}")
+    else:
+        _LOGGER.info(f"State Machine Diagram:{os.linesep}{graph_url}{os.linesep}")
+
+    _LOGGER.info(f"Mermaid chart:{os.linesep}{graph_data}")
+
+def output_dot_graph(config):
     graph_data = f"digraph \"{config[CONF_NAME] if CONF_NAME in config else 'State Machine'}\" {{\n"
     graph_data = graph_data + "  node [shape=ellipse];\n"
     for input in config[CONF_INPUTS_KEY]:
@@ -113,8 +140,6 @@ def output_graph(config):
         _LOGGER.info(f"State Machine Diagram:{os.linesep}{graph_url}{os.linesep}")
 
     _LOGGER.info(f"DOT language graph:{os.linesep}{graph_data}")
-
-    return config
 
 def validate_transitions(config):  
     states = set(map(lambda x: x[CONF_NAME], config[CONF_STATES_KEY]))
@@ -183,7 +208,7 @@ CONFIG_SCHEMA = cv.All(
                 )), cv.Length(min=1), unique_names
             ),
             cv.Optional(CONF_INITIAL_STATE): cv.string_strict,
-            cv.Optional(CONF_DIAGRAM, default=False): cv.boolean
+            cv.Optional(CONF_DIAGRAM): cv.one_of("mermaid", "dot")
         }
     ).extend(cv.COMPONENT_SCHEMA),
     validate_transitions,

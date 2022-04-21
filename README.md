@@ -187,12 +187,44 @@ text_sensor:
 
 ## Diagrams
 
-You have an option to generate a diagram of the state machine. You can enable this by adding `diagram: true` to the state machine yaml declaration (disabled by default).
+You have an option to generate a diagram of the state machine. You can enable this by adding `diagram: <format>` to the state machine yaml declaration (disabled by default). Currently supported formats are [`mermaid`](https://github.com/mermaid-js/mermaid) and [`dot`](https://en.wikipedia.org/wiki/DOT_(graph_description_language))
 
-When compiling or validating your YAML a state machine diagram will be output to the console, in a form of:
+When compiling or validating your YAML a state machine diagram will be output to the console. 
+
+### Mermaid
+[Mermaid](https://github.com/mermaid-js/mermaid) is a JavaScript based diagramming and charting tool that takes Markdown-inspired text definitions and creates diagrams dynamically in the browser.
+
+Github [supports](https://github.blog/2022-02-14-include-diagrams-markdown-files-mermaid/) Mermaid diagrams emdded into Martkdown as code snippets via ` ```mermaid ... ``` `. 
+
+When using `mermaid` diagram the following will be output to console:
+
+* The "source code" of the diagram in Mermaid notation
+
+Here's an example:
+
+```
+stateDiagram-v2
+  direction LR
+  [*] --> OFF
+  ON --> OFF: TOGGLE
+  OFF --> ON: TOGGLE
+```
+
+```mermaid
+stateDiagram-v2
+  direction LR
+  [*] --> OFF
+  ON --> OFF: TOGGLE
+  OFF --> ON: TOGGLE
+```
+
+### DOT
+[DOT](https://en.wikipedia.org/wiki/DOT_(graph_description_language)) DOT is a graph description language.
+
+When using `dot` diagram the following will be output to console:
 
 * A URL of the diagram image in SVG format
-* The "source code" of the diagram in [DOT language](https://en.wikipedia.org/wiki/DOT_(graph_description_language))
+* The "source code" of the diagram in DOT language
 
 Here's an example:
 
@@ -207,6 +239,10 @@ digraph "On/Off Toggle State Machine" {
   OFF -> ON [label=TOGGLE];
 }
 ``` 
+
+Which corresponds to:
+
+![Simple Toggle State Machine Diagram](images/state-machine-toggle.svg)
 
 To get just the url use this command:
 
@@ -226,7 +262,13 @@ esphome config <config.yaml> 2>&1 | grep quickchart.io | xargs open -n -a "Googl
 
 ### Simple Toggle
 
-![Simple Toggle State Machine Diagram](images/state-machine-toggle.svg)
+```mermaid
+stateDiagram-v2
+  direction LR
+  [*] --> OFF
+  ON --> OFF: TOGGLE
+  OFF --> ON: TOGGLE
+```
 
 This example illustrates toggling an LED using a button.
 
@@ -234,7 +276,16 @@ See [toggle-example.yaml](toggle-example.yaml).
 
 ### Button Controlled Dimmable Light
 
-![Button Controlled Dimmable Light State Machine Diagram](images/state-machine-brightness.svg)
+```mermaid
+stateDiagram-v2
+  direction LR
+  [*] --> OFF
+  ON --> OFF: CLICK
+  OFF --> ON: CLICK
+  EDITING --> EDITING: CLICK
+  ON --> EDITING: HOLD
+  EDITING --> ON: HOLD
+```
 
 This example models a single button control for a dimmable light with the following functionality:
 * CLICK to toggle ON of OFF
@@ -244,7 +295,27 @@ See [dimmable-light-example.yaml](dimmable-light-example.yaml).
 
 ### Dual Switch Cover Control
 
-![Dual Switch Cover Control State Machine Diagram](images/state-machine-dual-switch-cover.svg)
+```mermaid
+stateDiagram-v2
+  direction LR
+  [*] --> IDLE
+  IDLE --> WAITING_CLOSE_BUTTON: OPEN_ON
+  WAITING_OPEN_BUTTON --> SUN_TRACKER_ON: OPEN_ON
+  CLOSING --> OPENING: OPEN_ON
+  OPENING --> IDLE: OPEN_OFF
+  WAITING_CLOSE_BUTTON --> IDLE: OPEN_OFF
+  SUN_TRACKER_ON --> WAITING_OPEN_BUTTON: OPEN_OFF
+  IDLE --> WAITING_OPEN_BUTTON: CLOSE_ON
+  WAITING_CLOSE_BUTTON --> SUN_TRACKER_ON: CLOSE_ON
+  OPENING --> CLOSING: CLOSE_ON
+  CLOSING --> IDLE: CLOSE_OFF
+  WAITING_OPEN_BUTTON --> IDLE: CLOSE_OFF
+  SUN_TRACKER_ON --> WAITING_CLOSE_BUTTON: CLOSE_OFF
+  WAITING_CLOSE_BUTTON --> OPENING: OPENING_TIMEOUT
+  WAITING_OPEN_BUTTON --> CLOSING: CLOSING_TIMEOUT
+  OPENING --> IDLE: STOP
+  CLOSING --> IDLE: STOP
+```
 
 This example demonstrates using 2 switches to control a time-based cover:
 * Switch 1 ON: OPEN
