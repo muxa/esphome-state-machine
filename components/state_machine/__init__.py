@@ -94,7 +94,7 @@ def validate_transition(value):
     return validate_transition({CONF_FROM: a, CONF_TO: b})
 
 def output_graph(config):
-    if config[CONF_DIAGRAM] == None or config[CONF_DIAGRAM] == False:
+    if not CONF_DIAGRAM in config:
         return config
 
     if config[CONF_DIAGRAM] == "mermaid":
