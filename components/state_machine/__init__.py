@@ -39,12 +39,20 @@ StateMachineOnLeaveTrigger = state_machine_ns.class_(
     "StateMachineOnLeaveTrigger", automation.Trigger.template()
 )
 
-StateMachineInputActionTrigger = state_machine_ns.class_(
-    "StateMachineInputActionTrigger", automation.Trigger.template()
+StateMachineOnInputTrigger = state_machine_ns.class_(
+    "StateMachineOnInputTrigger", automation.Trigger.template()
 )
 
-StateMachineTransitionActionTrigger = state_machine_ns.class_(
-    "StateMachineTransitionActionTrigger", automation.Trigger.template()
+StateMachineBeforeTransitionTrigger = state_machine_ns.class_(
+    "StateMachineBeforeTransitionTrigger", automation.Trigger.template()
+)
+
+StateMachineOnTransitionTrigger = state_machine_ns.class_(
+    "StateMachineOnTransitionTrigger", automation.Trigger.template()
+)
+
+StateMachineAfterTransitionTrigger = state_machine_ns.class_(
+    "StateMachineAfterTransitionTrigger", automation.Trigger.template()
 )
 
 StateMachineSetAction = state_machine_ns.class_("StateMachineSetAction", automation.Action)
@@ -64,6 +72,12 @@ CONF_STATE_ON_SET_KEY = 'on_set'
 CONF_STATE_ON_ENTER_KEY = 'on_enter'
 CONF_STATE_ON_LEAVE_KEY = 'on_leave'
 CONF_INPUT_TRANSITIONS_KEY = 'transitions'
+CONF_BEFORE_TRANSITION_KEY = 'before_transition'
+CONF_ON_TRANSITION_KEY = 'on_transition'
+CONF_AFTER_TRANSITION_KEY = 'after_transition'
+CONF_ON_INPUT_KEY = 'on_input'
+
+# deprecated
 CONF_INPUT_TRANSITIONS_ACTION_KEY = 'action'
 CONF_INPUT_ACTION_KEY = 'action'
 
@@ -79,11 +93,22 @@ def validate_transition(value):
             {
                 cv.Required(CONF_FROM): cv.string_strict,
                 cv.Required(CONF_TO): cv.string_strict,
-                cv.Optional(CONF_INPUT_TRANSITIONS_ACTION_KEY): automation.validate_automation(
+                cv.Optional(CONF_BEFORE_TRANSITION_KEY): automation.validate_automation(
                     {
-                        cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(StateMachineTransitionActionTrigger),
+                        cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(StateMachineBeforeTransitionTrigger),
                     }
-                )
+                ),
+                cv.Optional(CONF_ON_TRANSITION_KEY): automation.validate_automation(
+                    {
+                        cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(StateMachineOnTransitionTrigger),
+                    }
+                ),
+                cv.Optional(CONF_AFTER_TRANSITION_KEY): automation.validate_automation(
+                    {
+                        cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(StateMachineAfterTransitionTrigger),
+                    }
+                ),
+                cv.Optional(CONF_INPUT_TRANSITIONS_ACTION_KEY): cv.invalid("`action` is deprecated. Please use one of `before_transition`, `on_transition` or `after_transition` instead"),
             }
         )(value)
     value = cv.string(value)
@@ -195,11 +220,12 @@ CONFIG_SCHEMA = cv.All(
                 cv.ensure_list(cv.maybe_simple_value(
                     {
                         cv.Required(CONF_NAME): cv.string_strict,
-                        cv.Optional(CONF_INPUT_ACTION_KEY): automation.validate_automation(
+                        cv.Optional(CONF_ON_INPUT_KEY): automation.validate_automation(
                             {
-                                cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(StateMachineInputActionTrigger),
+                                cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(StateMachineOnInputTrigger),
                             }
                         ),
+                        cv.Optional(CONF_INPUT_ACTION_KEY): cv.invalid("`action` is deprecated. Please use `on_input` instead"),
                         cv.Optional(CONF_INPUT_TRANSITIONS_KEY): cv.All(
                             cv.ensure_list(validate_transition), cv.Length(min=1)
                         ),
@@ -271,12 +297,22 @@ async def to_code(config):
                 )
                 await automation.build_automation(trigger, [], action)
 
-    # 1. setup transition/input automations (they should run first)
+    # setup transition/input automations (they should run first)
     for input in config[CONF_INPUTS_KEY]:
+
+        # 1. on_input automations
+        if CONF_ON_INPUT_KEY in input:
+            for action in input.get(CONF_ON_INPUT_KEY, []):
+                trigger = cg.new_Pvariable(
+                    action[CONF_TRIGGER_ID], var, input[CONF_NAME]
+                )
+                await automation.build_automation(trigger, [], action)
+
+        # 2. before_transition automations
         if CONF_INPUT_TRANSITIONS_KEY in input:
             for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
-                if CONF_INPUT_TRANSITIONS_ACTION_KEY in transition:
-                    for action in transition.get(CONF_INPUT_TRANSITIONS_ACTION_KEY, []):
+                if CONF_BEFORE_TRANSITION_KEY in transition:
+                    for action in transition.get(CONF_BEFORE_TRANSITION_KEY, []):
                         trigger = cg.new_Pvariable(
                             action[CONF_TRIGGER_ID], 
                             var, 
@@ -289,14 +325,7 @@ async def to_code(config):
                         )
                         await automation.build_automation(trigger, [], action)
 
-        if CONF_INPUT_ACTION_KEY in input:
-            for action in input.get(CONF_INPUT_ACTION_KEY, []):
-                trigger = cg.new_Pvariable(
-                    action[CONF_TRIGGER_ID], var, input[CONF_NAME]
-                )
-                await automation.build_automation(trigger, [], action)
-
-    # 2. setup on_leave automations (to ensure they are executed before on_enter)
+    # 3. on_leave automations
     for state in config[CONF_STATES_KEY]:
 
         if CONF_STATE_ON_LEAVE_KEY in state:
@@ -306,7 +335,25 @@ async def to_code(config):
                 )
                 await automation.build_automation(trigger, [], action)
 
-    # 3. setup on_enter automations after on_leave
+    # 4. on_transition automations
+    for input in config[CONF_INPUTS_KEY]:
+        if CONF_INPUT_TRANSITIONS_KEY in input:
+            for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
+                if CONF_ON_TRANSITION_KEY in transition:
+                    for action in transition.get(CONF_ON_TRANSITION_KEY, []):
+                        trigger = cg.new_Pvariable(
+                            action[CONF_TRIGGER_ID], 
+                            var, 
+                            cg.StructInitializer(
+                                StateTransition,
+                                ("from_state", transition[CONF_FROM]),
+                                ("input", input[CONF_NAME]),
+                                ("to_state", transition[CONF_TO]),
+                            )
+                        )
+                        await automation.build_automation(trigger, [], action)
+
+    # 5. on_enter automations
     for state in config[CONF_STATES_KEY]:
 
         if CONF_STATE_ON_ENTER_KEY in state:
@@ -315,6 +362,24 @@ async def to_code(config):
                     action[CONF_TRIGGER_ID], var, state[CONF_NAME]
                 )
                 await automation.build_automation(trigger, [], action)  
+
+    # 6. after_transition automations
+    for input in config[CONF_INPUTS_KEY]:
+        if CONF_INPUT_TRANSITIONS_KEY in input:
+            for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
+                if CONF_AFTER_TRANSITION_KEY in transition:
+                    for action in transition.get(CONF_AFTER_TRANSITION_KEY, []):
+                        trigger = cg.new_Pvariable(
+                            action[CONF_TRIGGER_ID], 
+                            var, 
+                            cg.StructInitializer(
+                                StateTransition,
+                                ("from_state", transition[CONF_FROM]),
+                                ("input", input[CONF_NAME]),
+                                ("to_state", transition[CONF_TO]),
+                            )
+                        )
+                        await automation.build_automation(trigger, [], action)
 
     await cg.register_component(var, config)
 

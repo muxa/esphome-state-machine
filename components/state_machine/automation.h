@@ -26,16 +26,32 @@ namespace esphome
       }
     };
 
-    class StateMachineOnEnterTrigger : public Trigger<>
+    class StateMachineOnInputTrigger : public Trigger<>
     {
     public:
-      StateMachineOnEnterTrigger(StateMachineComponent *state_machine, std::string state)
+      StateMachineOnInputTrigger(StateMachineComponent *state_machine, std::string input)
       {
-        state_machine->add_on_transition_callback(
-            [this, state](StateTransition transition)
+        state_machine->add_before_transition_callback(
+            [this, input](StateTransition transition)
             {
               this->stop_action(); // stop any previous running actions
-              if (transition.to_state == state)
+              if (transition.input == input)
+              {
+                this->trigger();
+              }
+            });
+      }
+    };
+    class StateMachineBeforeTransitionTrigger : public Trigger<>
+    {
+    public:
+      StateMachineBeforeTransitionTrigger(StateMachineComponent *state_machine, StateTransition for_transition)
+      {
+        state_machine->add_before_transition_callback(
+            [this, for_transition](StateTransition transition)
+            {
+              this->stop_action(); // stop any previous running actions
+              if (transition.from_state == for_transition.from_state && transition.input == for_transition.input && transition.to_state == for_transition.to_state)
               {
                 this->trigger();
               }
@@ -48,7 +64,7 @@ namespace esphome
     public:
       StateMachineOnLeaveTrigger(StateMachineComponent *state_machine, std::string state)
       {
-        state_machine->add_on_transition_callback(
+        state_machine->add_before_transition_callback(
             [this, state](StateTransition transition)
             {
               this->stop_action(); // stop any previous running actions
@@ -59,13 +75,12 @@ namespace esphome
             });
       }
     };
-
-    class StateMachineTransitionActionTrigger : public Trigger<>
+    class StateMachineOnTransitionTrigger : public Trigger<>
     {
     public:
-      StateMachineTransitionActionTrigger(StateMachineComponent *state_machine, StateTransition for_transition)
+      StateMachineOnTransitionTrigger(StateMachineComponent *state_machine, StateTransition for_transition)
       {
-        state_machine->add_on_transition_callback(
+        state_machine->add_before_transition_callback(
             [this, for_transition](StateTransition transition)
             {
               this->stop_action(); // stop any previous running actions
@@ -77,16 +92,32 @@ namespace esphome
       }
     };
 
-    class StateMachineInputActionTrigger : public Trigger<>
+    class StateMachineOnEnterTrigger : public Trigger<>
     {
     public:
-      StateMachineInputActionTrigger(StateMachineComponent *state_machine, std::string input)
+      StateMachineOnEnterTrigger(StateMachineComponent *state_machine, std::string state)
       {
-        state_machine->add_on_transition_callback(
-            [this, input](StateTransition transition)
+        state_machine->add_after_transition_callback(
+            [this, state](StateTransition transition)
             {
               this->stop_action(); // stop any previous running actions
-              if (transition.input == input)
+              if (transition.to_state == state)
+              {
+                this->trigger();
+              }
+            });
+      }
+    };
+    class StateMachineAfterTransitionTrigger : public Trigger<>
+    {
+    public:
+      StateMachineAfterTransitionTrigger(StateMachineComponent *state_machine, StateTransition for_transition)
+      {
+        state_machine->add_after_transition_callback(
+            [this, for_transition](StateTransition transition)
+            {
+              this->stop_action(); // stop any previous running actions
+              if (transition.from_state == for_transition.from_state && transition.input == for_transition.input && transition.to_state == for_transition.to_state)
               {
                 this->trigger();
               }
