@@ -30,6 +30,7 @@ jobs:
         pip install esphome
     - name: ESPHome Compile examples
       run: |
+        esphome compile test.yaml
         esphome compile toggle-example.yaml
         esphome compile dimmable-light-example.yaml
         esphome compile dual-switch-cover-example.yaml
