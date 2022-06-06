@@ -91,6 +91,8 @@ When State Machine receives input (via `transition` action) it will call the aut
 5. "To" state `on_enter`
 6. `after_transition`
 
+See [test.yaml](test.yaml) for a demonstration of running order of these automations within a context of simple ON-OFF state machine.
+
 ## `state_machine.transition` Action
 
 You can provide input to the state machine from elsewhere in your WAML file with the `state_machine.transition` action.

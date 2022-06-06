@@ -33,8 +33,6 @@ state_machine:
         transitions:
           - from: "ON"
             to: "OFF"
-            # action:
-            #   - logger.log: "Turning off"
             before_transition:
               - logger.log: "2. [ON->OFF] before_transition. [ON] on_leave should be called next"
             on_transition:
@@ -49,8 +47,6 @@ state_machine:
               - logger.log: "4. [OFF->ON] on_transition. [ON] on_enter should be called next"
             after_transition:
               - logger.log: "6. [OFF->ON] after_transition. done"
-        # action:
-        #   - logger.log: "Toggling"
         on_input:
           - logger.log: "1. on_input. before_transition should be called next"
     diagram: mermaid
