@@ -36,7 +36,8 @@ namespace esphome
       optional<StateTransition> transition(std::string input);
 
       void add_on_set_callback(std::function<void(std::string)> &&callback) { this->set_callback_.add(std::move(callback)); }
-      void add_on_transition_callback(std::function<void(StateTransition)> &&callback) { this->transition_callback_.add(std::move(callback)); }
+      void add_before_transition_callback(std::function<void(StateTransition)> &&callback) { this->before_transition_callback_.add(std::move(callback)); }
+      void add_after_transition_callback(std::function<void(StateTransition)> &&callback) { this->after_transition_callback_.add(std::move(callback)); }
 
     protected:
       std::string name_;
@@ -50,7 +51,8 @@ namespace esphome
       optional<StateTransition> get_transition(std::string input);
 
       CallbackManager<void(std::string)> set_callback_{};
-      CallbackManager<void(StateTransition)> transition_callback_{};
+      CallbackManager<void(StateTransition)> before_transition_callback_{};
+      CallbackManager<void(StateTransition)> after_transition_callback_{};
     };
 
   } // namespace state_machine

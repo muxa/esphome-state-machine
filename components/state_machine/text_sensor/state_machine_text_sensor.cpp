@@ -10,7 +10,7 @@ namespace esphome
     void StateMachineTextSensor::set_state_machine(StateMachineComponent *state_machine)
     {
       this->state_machine_ = state_machine;
-      this->state_machine_->add_on_transition_callback(
+      this->state_machine_->add_after_transition_callback(
             [this](StateTransition transition)
             {
               this->update();

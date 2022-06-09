@@ -27,7 +27,7 @@ state_machine:
           - OFF -> ON
           - from: EDITING
             to: EDITING
-            action: # cycle through brightness levels
+            on_transition: # cycle through brightness levels
               - lambda: |-
                   auto call = id(light1).turn_on();
                   auto brightness = id(light1).current_values.get_brightness();
@@ -41,7 +41,7 @@ state_machine:
         transitions:
           - from: "ON"
             to: EDITING
-            action: # single flash to indicate beginning of editing
+            on_transition: # single flash to indicate beginning of editing
               - light.turn_on:
                   id: light1
                   effect: Strobe
@@ -52,7 +52,7 @@ state_machine:
                   transition_length: 100ms
           - from: EDITING
             to: "ON"
-            action: # tripple flash to indicate end of editing
+            on_transition: # tripple flash to indicate end of editing
               - light.turn_on:
                   id: light1
                   effect: Strobe

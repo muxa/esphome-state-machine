@@ -59,8 +59,8 @@ binary_sensor:
 * **states** (**Required**, list): The list of states that the state machine has.
 
   * **name** (**Required**, string): The name of the state. Must not repeat.
-  * **on_enter** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when entering this state. 
-  * **on_leave** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when leaving this state. It called before `on_enter` of the next state.
+  * **on_enter** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when entering this state. Called after `on_transition` automation and before `after_transition`. 
+  * **on_leave** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when leaving this state. Called after `before_transition` automation and before `on_transition` automation. 
   * **on_set** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when setting this state using `set` action or via `initial_state`. Will not trigger if new state is the same as current state.
 
 * **inputs** (**Required**, list): The list of inputs that the state machine supports with allowed state transitions.
@@ -69,14 +69,29 @@ binary_sensor:
   * **transitions** (**Required**, list): The list of allowed transitions. Short form is `FROM_STATE -> TO_STATE`, or advanced configuration:
     * **from** (**Required**, string): Source state that this input is allowed on.
     * **to** (**Required**, string): Target state that this input transitions to.
-    * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is performed. This action is performed before state's `on_leave` action is called.
-  * **action** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when transition is done by this input. This action is performed after transition-specific action and before state's `on_leave` action is called.
+    * **before_transition** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform before transition. Called after `on_input` automation and before `on_transition` automation. 
+    * **on_transition** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform on transition. Called after `on_leave` automation and before `on_enter` automation. 
+    * **after_transition** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform after transition. Called after `on_enter` automation. 
+  * **on_input** (*Optional*, [Automation](https://esphome.io/guides/automations.html#automation)): An automation to perform when this input is triggred. This automation is performed first, then `before_transition ` will be called. This automation will not be called if transition is invalid.
 
 * **diagram** (*Optional*, boolean): If true, then a diagram of the state machine will be output to the console during validation/compilation of YAML. See **Diagrams** section below for more details. Defaults to `false`.
 
 > ### Note:
 >
 > Any running state machine automations (state, input and transition) will be stopped before running next automations. This is useful when there's a delayed transition in one of the automation and it needs to be cancelled because a new input was provided which results in a different transition. 
+
+## Order of Triggers
+
+When State Machine receives input (via `transition` action) it will call the automation specified in the input, transition, the "from" state and the "to" state in the following order:
+
+1. `on_input`
+2. `before_transition`
+3. "From" state `on_leave`
+4. `on_transition`
+5. "To" state `on_enter`
+6. `after_transition`
+
+See [test.yaml](test.yaml) for a demonstration of running order of these automations within a context of simple ON-OFF state machine.
 
 ## `state_machine.transition` Action
 

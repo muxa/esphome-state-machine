@@ -96,10 +96,11 @@ namespace esphome
       optional<StateTransition> transition = this->get_transition(input);
       if (transition)
       {
+        this->before_transition_callback_.call(transition.value());
         ESP_LOGD(TAG, "%s: transitioned from %s to %s", input.c_str(), transition.value().from_state.c_str(), transition.value().to_state.c_str());
         this->last_transition_ = transition;
         this->current_state_ = transition.value().to_state;
-        this->transition_callback_.call(transition.value());
+        this->after_transition_callback_.call(transition.value());
       }
       else
       {

@@ -1,0 +1,71 @@
+esphome:
+  name: test
+  platform: ESP8266
+  board: d1_mini
+
+logger:
+  level: DEBUG
+
+external_components:
+  - source: components
+
+text_sensor:
+  - platform: state_machine
+    name: On/Off Toggle State Machine
+
+state_machine:
+  - name: On/Off Toggle State Machine
+    states:
+      - name: "OFF"
+        on_enter:
+          - output.turn_off: led1
+          - logger.log: "5. [OFF] on_enter. [ON->OFF] after_transition should be called next"
+        on_leave:
+          - logger.log: "3. [OFF] on_leave. [OFF->ON] on_transition should be called next"
+      - name: "ON"
+        on_enter:
+          - output.turn_on: led1
+          - logger.log: "5. [ON] on_enter. [OFF->ON] after_transition should be called next"
+        on_leave:
+          - logger.log: "3. [ON] on_leave. [ON->OFF] on_transition should be called next"
+    inputs:
+      - name: TOGGLE
+        transitions:
+          - from: "ON"
+            to: "OFF"
+            before_transition:
+              - logger.log: "2. [ON->OFF] before_transition. [ON] on_leave should be called next"
+            on_transition:
+              - logger.log: "4. [ON->OFF] on_transition. [OFF] on_enter should be called next"
+            after_transition:
+              - logger.log: "6. [ON->OFF] after_transition. done"
+          - from: "OFF"
+            to: "ON"
+            before_transition:
+              - logger.log: "2. [OFF->ON] before_transition. [OFF] on_leave should be called next"
+            on_transition:
+              - logger.log: "4. [OFF->ON] on_transition. [ON] on_enter should be called next"
+            after_transition:
+              - logger.log: "6. [OFF->ON] after_transition. done"
+        on_input:
+          - logger.log: "1. on_input. before_transition should be called next"
+    diagram: mermaid
+
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D6
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Button"
+    filters:
+      - delayed_on: 100ms
+    on_press:
+      - state_machine.transition: TOGGLE
+
+output:
+  - platform: gpio
+    pin:
+      number: D4
+      inverted: True
+    id: led1
