@@ -20,7 +20,9 @@ StateMachineTextSensor = state_machine_ns.class_(
     "StateMachineTextSensor", text_sensor.TextSensor, cg.Component
 )
 
-CONFIG_SCHEMA = text_sensor.TEXT_SENSOR_SCHEMA.extend(
+CONFIG_SCHEMA = text_sensor.text_sensor_schema(
+    icon="mdi:state-machine",
+).extend(
     {
         cv.GenerateID(): cv.declare_id(StateMachineTextSensor),
     }
