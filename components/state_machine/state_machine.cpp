@@ -81,6 +81,7 @@ namespace esphome
       if (std::find(this->states_.begin(), this->states_.end(), state) == this->states_.end())
       {
         ESP_LOGE(TAG, "Invalid state: %s", state.c_str());
+        return;
       }
 
       if (state != this->current_state_)
