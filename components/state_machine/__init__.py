@@ -290,7 +290,7 @@ async def to_code(config):
     # setup on_set automations
     for state in config[CONF_STATES_KEY]:
 
-        if CONF_STATE_ON_LEAVE_KEY in state:
+        if CONF_STATE_ON_SET_KEY in state:
             for action in state.get(CONF_STATE_ON_SET_KEY, []):
                 trigger = cg.new_Pvariable(
                     action[CONF_TRIGGER_ID], var, state[CONF_NAME]
