@@ -9,10 +9,10 @@ namespace esphome
     static const char *const TAG = "state_machine";
 
     StateMachineComponent::StateMachineComponent(
-        std::vector<std::string> states,
-        std::vector<std::string> inputs,
-        std::vector<StateTransition> transitions,
-        std::string initial_state)
+        const std::vector<std::string> &states,
+        const std::vector<std::string> &inputs,
+        const std::vector<StateTransition> &transitions,
+        const std::string &initial_state)
     {
       this->states_ = states;
       this->inputs_ = inputs;
@@ -59,7 +59,7 @@ namespace esphome
       }
     }
 
-    optional<StateTransition> StateMachineComponent::get_transition(std::string input)
+    optional<StateTransition> StateMachineComponent::get_transition(const std::string &input)
     {
       if (std::find(this->inputs_.begin(), this->inputs_.end(), input) == this->inputs_.end())
       {
@@ -76,7 +76,7 @@ namespace esphome
       return {};
     }
 
-    void StateMachineComponent::set(std::string state)
+    void StateMachineComponent::set(const std::string &state)
     {
       if (std::find(this->states_.begin(), this->states_.end(), state) == this->states_.end())
       {
@@ -92,7 +92,7 @@ namespace esphome
       }
     }
 
-    optional<StateTransition> StateMachineComponent::transition(std::string input)
+    optional<StateTransition> StateMachineComponent::transition(const std::string &input)
     {
       optional<StateTransition> transition = this->get_transition(input);
       if (transition)
