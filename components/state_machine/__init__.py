@@ -383,8 +383,6 @@ async def to_code(config):
 
     await cg.register_component(var, config)
 
-    cg.add(var.dump_config())
-
 @automation.register_action(
     "state_machine.set",
     StateMachineSetAction,
