@@ -31,9 +31,9 @@ namespace esphome
       void set(const std::string &state);
       optional<StateTransition> transition(const std::string &input);
 
-      void add_on_set_callback(std::function<void(std::string)> &&callback) { this->set_callback_.add(std::move(callback)); }
-      void add_before_transition_callback(std::function<void(StateTransition)> &&callback) { this->before_transition_callback_.add(std::move(callback)); }
-      void add_after_transition_callback(std::function<void(StateTransition)> &&callback) { this->after_transition_callback_.add(std::move(callback)); }
+      void add_on_set_callback(std::function<void(const std::string&)> &&callback) { this->set_callback_.add(std::move(callback)); }
+      void add_before_transition_callback(std::function<void(const StateTransition&)> &&callback) { this->before_transition_callback_.add(std::move(callback)); }
+      void add_after_transition_callback(std::function<void(const StateTransition&)> &&callback) { this->after_transition_callback_.add(std::move(callback)); }
 
       void add_state(const std::string &state) {
         this->states_.push_back(state);

@@ -12,10 +12,10 @@ namespace esphome
     class StateMachineOnSetTrigger : public Trigger<>
     {
     public:
-      StateMachineOnSetTrigger(StateMachineComponent *state_machine, std::string state)
+      StateMachineOnSetTrigger(StateMachineComponent *state_machine, const std::string &state)
       {
         state_machine->add_on_set_callback(
-            [this, state](std::string new_state)
+            [this, state](const std::string &new_state)
             {
               if (new_state == state)
               {
@@ -29,10 +29,10 @@ namespace esphome
     class StateMachineOnInputTrigger : public Trigger<>
     {
     public:
-      StateMachineOnInputTrigger(StateMachineComponent *state_machine, std::string input)
+      StateMachineOnInputTrigger(StateMachineComponent *state_machine, const std::string &input)
       {
         state_machine->add_before_transition_callback(
-            [this, input](StateTransition transition)
+            [this, input](const StateTransition &transition)
             {
               this->stop_action(); // stop any previous running actions
               if (transition.input == input)
@@ -45,10 +45,10 @@ namespace esphome
     class StateMachineBeforeTransitionTrigger : public Trigger<>
     {
     public:
-      StateMachineBeforeTransitionTrigger(StateMachineComponent *state_machine, StateTransition for_transition)
+      StateMachineBeforeTransitionTrigger(StateMachineComponent *state_machine, const StateTransition &for_transition)
       {
         state_machine->add_before_transition_callback(
-            [this, for_transition](StateTransition transition)
+            [this, for_transition](const StateTransition &transition)
             {
               this->stop_action(); // stop any previous running actions
               if (transition.from_state == for_transition.from_state && transition.input == for_transition.input && transition.to_state == for_transition.to_state)
@@ -62,10 +62,10 @@ namespace esphome
     class StateMachineOnLeaveTrigger : public Trigger<>
     {
     public:
-      StateMachineOnLeaveTrigger(StateMachineComponent *state_machine, std::string state)
+      StateMachineOnLeaveTrigger(StateMachineComponent *state_machine, const std::string &state)
       {
         state_machine->add_before_transition_callback(
-            [this, state](StateTransition transition)
+            [this, state](const StateTransition &transition)
             {
               this->stop_action(); // stop any previous running actions
               if (transition.from_state == state)
@@ -78,10 +78,10 @@ namespace esphome
     class StateMachineOnTransitionTrigger : public Trigger<>
     {
     public:
-      StateMachineOnTransitionTrigger(StateMachineComponent *state_machine, StateTransition for_transition)
+      StateMachineOnTransitionTrigger(StateMachineComponent *state_machine, const StateTransition &for_transition)
       {
         state_machine->add_before_transition_callback(
-            [this, for_transition](StateTransition transition)
+            [this, for_transition](const StateTransition &transition)
             {
               this->stop_action(); // stop any previous running actions
               if (transition.from_state == for_transition.from_state && transition.input == for_transition.input && transition.to_state == for_transition.to_state)
@@ -95,10 +95,10 @@ namespace esphome
     class StateMachineOnEnterTrigger : public Trigger<>
     {
     public:
-      StateMachineOnEnterTrigger(StateMachineComponent *state_machine, std::string state)
+      StateMachineOnEnterTrigger(StateMachineComponent *state_machine, const std::string &state)
       {
         state_machine->add_after_transition_callback(
-            [this, state](StateTransition transition)
+            [this, state](const StateTransition &transition)
             {
               this->stop_action(); // stop any previous running actions
               if (transition.to_state == state)
@@ -111,10 +111,10 @@ namespace esphome
     class StateMachineAfterTransitionTrigger : public Trigger<>
     {
     public:
-      StateMachineAfterTransitionTrigger(StateMachineComponent *state_machine, StateTransition for_transition)
+      StateMachineAfterTransitionTrigger(StateMachineComponent *state_machine, const StateTransition &for_transition)
       {
         state_machine->add_after_transition_callback(
-            [this, for_transition](StateTransition transition)
+            [this, for_transition](const StateTransition &transition)
             {
               this->stop_action(); // stop any previous running actions
               if (transition.from_state == for_transition.from_state && transition.input == for_transition.input && transition.to_state == for_transition.to_state)
