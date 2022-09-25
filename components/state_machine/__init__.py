@@ -259,33 +259,31 @@ async def to_code(config):
 
     cg.add_global(state_machine_ns.using)
 
-    states = []
-    inputs = []
-    transitions = []
+    initial_state = config[CONF_INITIAL_STATE] if CONF_INITIAL_STATE in config else config[CONF_STATES_KEY][0][CONF_NAME]
+
+    var = cg.new_Pvariable(config[CONF_ID], initial_state)
+
+    if CONF_NAME in config:
+        cg.add(var.set_name(config[CONF_NAME]))   
 
     for state in config[CONF_STATES_KEY]:
-        states.append(state[CONF_NAME])
+        cg.add(var.add_state(state[CONF_NAME]))
     
     for input in config[CONF_INPUTS_KEY]:
-        inputs.append(input[CONF_NAME])
+        cg.add(var.add_input(input[CONF_NAME]))
 
         if CONF_INPUT_TRANSITIONS_KEY in input:
             for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
-                transitions.append(
-                    cg.StructInitializer(
-                        StateTransition,
-                        ("from_state", transition[CONF_FROM]),
-                        ("input", input[CONF_NAME]),
-                        ("to_state", transition[CONF_TO]),
+                cg.add(
+                    var.add_transition(
+                        cg.StructInitializer(
+                            StateTransition,
+                            ("from_state", transition[CONF_FROM]),
+                            ("input", input[CONF_NAME]),
+                            ("to_state", transition[CONF_TO]),
+                        )
                     )
-                )
-
-    initial_state = config[CONF_INITIAL_STATE] if CONF_INITIAL_STATE in config else states[0]
-
-    var = cg.new_Pvariable(config[CONF_ID], states, inputs, transitions, initial_state)
-
-    if CONF_NAME in config:
-        cg.add(var.set_name(config[CONF_NAME]))    
+                ) 
 
     # setup on_set automations
     for state in config[CONF_STATES_KEY]:

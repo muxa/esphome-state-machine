@@ -8,15 +8,8 @@ namespace esphome
 
     static const char *const TAG = "state_machine";
 
-    StateMachineComponent::StateMachineComponent(
-        const std::vector<std::string> &states,
-        const std::vector<std::string> &inputs,
-        const std::vector<StateTransition> &transitions,
-        const std::string &initial_state)
+    StateMachineComponent::StateMachineComponent(const std::string &initial_state)
     {
-      this->states_ = states;
-      this->inputs_ = inputs;
-      this->transitions_ = transitions;
       this->current_state_ = initial_state;
       this->last_transition_ = {};
     }
