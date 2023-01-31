@@ -93,7 +93,7 @@ memorizer = dict()
 async def build_condition_(config):
     if config['type_id'] not in memorizer:
         memorizer[config['type_id']] = await build_condition(config, cg.TemplateArguments(), [])
-    cg.add(memorizer[config['type_id']])
+    return memorizer[config['type_id']]
 
 def validate_transition(value):
     if isinstance(value, dict):
