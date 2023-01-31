@@ -2,6 +2,8 @@
 
 #include "esphome/core/component.h"
 #include "esphome/core/helpers.h"
+#include "esphome/core/automation.h"
+
 namespace esphome
 {
   namespace state_machine
@@ -12,6 +14,7 @@ namespace esphome
       std::string from_state;
       std::string input;
       std::string to_state;
+      Condition<> * condition;
     };
 
     class StateMachineComponent : public Component
