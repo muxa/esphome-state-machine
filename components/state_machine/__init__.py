@@ -157,7 +157,7 @@ def format_condition(c):
         else:
             c2 = c.copy()
             for i in c:
-                if i in ['type_id', 'type', 'ID', 'manual']:
+                if i in ['type_id', 'type', 'id', 'manual']:
                     c2.pop(i)
             
             conditionname = None
@@ -171,30 +171,43 @@ def format_condition(c):
                 for i in c2:
                     conditionname = i
                     break
-            
-            arg = format_condition_argument(c2[conditionname])
-            long = conditionname + " " + arg
 
-            conditionname = conditionname.split('.')
+            if conditionname in ("number.in_range", "sensor.in_range"):
+                v = c2[conditionname]['id'].id
+
+                # No spaces, we don't want it broken by the shortener and confusing anyone
+                if 'above' in c2[conditionname]:
+                    v = str(c2[conditionname]['above']) + "<" + v
 
 
+                if 'below' in c2[conditionname]:
+                    v = v + "<" + str(c2[conditionname]['below'])
 
 
-            # If we have something like binary_sensor.is_on, the part before the dot
-            # needs to go to keep things short.
-            # But if it is something short already we can keep it.
-            if len(conditionname)==1:
-                conditionname = conditionname[0]
             else:
-                suffix = conditionname[-1]
-                p = '.'.join(conditionname[:-1])
+                arg = format_condition_argument(c2[conditionname])
+                long = conditionname + " " + arg
 
-                if len(p) < 7:
-                    conditionname = p + "." + suffix
+                conditionname = conditionname.split('.')
+
+
+
+
+                # If we have something like binary_sensor.is_on, the part before the dot
+                # needs to go to keep things short.
+                # But if it is something short already we can keep it.
+                if len(conditionname)==1:
+                    conditionname = conditionname[0]
                 else:
-                    conditionname = suffix
+                    suffix = conditionname[-1]
+                    p = '.'.join(conditionname[:-1])
 
-            v = conditionname + " " + arg
+                    if len(p) < 7:
+                        conditionname = p + "." + suffix
+                    else:
+                        conditionname = suffix
+
+                v = conditionname + " " + arg
      
         v = v.strip()
             
