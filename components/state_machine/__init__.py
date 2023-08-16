@@ -231,9 +231,9 @@ def output_mermaid_graph(config):
                     cond, longcond = format_condition(transition[CONF_CONDITION])
 
                     if len(cond) > MAX_CONDITION_LENGTH_IN_DIAGRAM:
-                        footnotes.append(f'[{len(footnotes)+1}] {longcond}')
+                        footnotes.append(f'[{len(footnotes)+1}] {longcond}').replace(os.linesep,'</br>')
 
-                    cond2 = textwrap.shorten(cond, MAX_CONDITION_LENGTH_IN_DIAGRAM, placeholder=f"[{len(footnotes)}]")
+                    cond2 = textwrap.shorten(cond, MAX_CONDITION_LENGTH_IN_DIAGRAM, placeholder=f"[{len(footnotes)}]").replace(os.linesep, '')
                     cond2 = f"(? {cond2})"
                     graph_data = graph_data + f"  {transition[CONF_FROM]} --> {transition[CONF_TO]}: {input[CONF_NAME]}{cond2}{os.linesep}"
                 else:
