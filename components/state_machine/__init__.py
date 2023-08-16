@@ -4,6 +4,7 @@ import urllib.parse
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import automation
+from esphome.automation import validate_condition, build_condition
 
 from esphome.const import (
     CONF_ID,
@@ -12,7 +13,8 @@ from esphome.const import (
     CONF_FROM,
     CONF_TO,
     CONF_STATE,
-    CONF_VALUE
+    CONF_VALUE,
+    CONF_CONDITION
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -87,12 +89,19 @@ CONF_TRANSITION_TO_KEY = 'to'
 
 CONF_STATE_MACHINE_ID = 'state_machine_id'
 
+memorizer = dict()
+async def build_condition_(config):
+    if config['type_id'] not in memorizer:
+        memorizer[config['type_id']] = await build_condition(config, cg.TemplateArguments(), [])
+    return memorizer[config['type_id']]
+
 def validate_transition(value):
     if isinstance(value, dict):
         return cv.Schema(
             {
                 cv.Required(CONF_FROM): cv.string_strict,
                 cv.Required(CONF_TO): cv.string_strict,
+                cv.Optional(CONF_CONDITION): validate_condition,
                 cv.Optional(CONF_BEFORE_TRANSITION_KEY): automation.validate_automation(
                     {
                         cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(StateMachineBeforeTransitionTrigger),
@@ -281,6 +290,7 @@ async def to_code(config):
                             ("from_state", transition[CONF_FROM]),
                             ("input", input[CONF_NAME]),
                             ("to_state", transition[CONF_TO]),
+                            ("condition", await build_condition_(transition[CONF_CONDITION]) if CONF_CONDITION in transition else cg.nullptr)
                         )
                     )
                 ) 
@@ -319,6 +329,7 @@ async def to_code(config):
                                 ("from_state", transition[CONF_FROM]),
                                 ("input", input[CONF_NAME]),
                                 ("to_state", transition[CONF_TO]),
+                                ("condition", await build_condition_(transition[CONF_CONDITION]) if CONF_CONDITION in transition else cg.nullptr)
                             )
                         )
                         await automation.build_automation(trigger, [], action)
@@ -347,6 +358,7 @@ async def to_code(config):
                                 ("from_state", transition[CONF_FROM]),
                                 ("input", input[CONF_NAME]),
                                 ("to_state", transition[CONF_TO]),
+                                ("condition", await build_condition_(transition[CONF_CONDITION]) if CONF_CONDITION in transition else cg.nullptr)
                             )
                         )
                         await automation.build_automation(trigger, [], action)
