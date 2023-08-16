@@ -1,6 +1,7 @@
 import logging
 import os
 import urllib.parse
+import textwrap
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import automation
@@ -127,6 +128,82 @@ def validate_transition(value):
     a, b = a.strip(), b.strip()
     return validate_transition({CONF_FROM: a, CONF_TO: b})
 
+
+def format_lambda(s):
+    s=s.strip()
+    if s.startswith('return'):
+        s = s[len('return'):]
+
+    if s.endswith(";"):
+        s = s[:-1]
+
+    return s.strip()
+
+
+def format_condition_argument(ca):
+    if 'id' in ca:
+        ca = ca['id']
+        if hasattr(ca, 'id'):
+            return ca.id
+    return ''
+
+def format_condition(c):
+    try:
+        v = ''
+        long = ''
+
+        if 'lambda' in c:
+            v = format_lambda(c['lambda'].value)
+        else:
+            c2 = c.copy()
+            for i in c:
+                if i in ['type_id', 'type', 'ID', 'manual']:
+                    c2.pop(i)
+            
+            conditionname = None
+
+            for i in c2:
+                if "." in i:
+                    conditionname = i
+                    break
+
+            if not conditionname:
+                for i in c2:
+                    conditionname = i
+                    break
+            
+            arg = format_condition_argument(c2[conditionname])
+            long = conditionname + " " + arg
+
+            conditionname = conditionname.split('.')
+
+
+
+
+            # If we have something like binary_sensor.is_on, the part before the dot
+            # needs to go to keep things short.
+            # But if it is something short already we can keep it.
+            if len(conditionname)==1:
+                conditionname = conditionname[0]
+            else:
+                suffix = conditionname[-1]
+                p = '.'.join(conditionname[:-1])
+
+                if len(p) < 7:
+                    conditionname = p + "." + suffix
+                else:
+                    conditionname = suffix
+
+            v = conditionname + " " + arg
+     
+        v = v.strip()
+            
+        return (v, long or v)
+    except Exception as e:
+        _LOGGER.exception(f"Mermaid chart error:{e}")
+        return('','')
+
+
 def output_graph(config):
     if not CONF_DIAGRAM in config:
         return config
@@ -138,15 +215,37 @@ def output_graph(config):
 
     return config
 
+
+MAX_CONDITION_LENGTH_IN_DIAGRAM = 22
 def output_mermaid_graph(config):
     graph_data = f"stateDiagram-v2{os.linesep}"
     graph_data = graph_data + f"  direction LR{os.linesep}"
     initial_state = config[CONF_INITIAL_STATE] if CONF_INITIAL_STATE in config else config[CONF_STATES_KEY][0][CONF_NAME]
     graph_data = graph_data + f"  [*] --> {initial_state}{os.linesep}"
+    footnotes = []
+
     for input in config[CONF_INPUTS_KEY]:
         if CONF_INPUT_TRANSITIONS_KEY in input:
             for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
-                graph_data = graph_data + f"  {transition[CONF_FROM]} --> {transition[CONF_TO]}: {input[CONF_NAME]}{os.linesep}"
+                if CONF_CONDITION in transition and transition[CONF_CONDITION]:
+                    cond, longcond = format_condition(transition[CONF_CONDITION])
+
+                    if len(cond) > MAX_CONDITION_LENGTH_IN_DIAGRAM:
+                        footnotes.append(f'[{len(footnotes)+1}] {longcond}')
+
+                    cond2 = textwrap.shorten(cond, MAX_CONDITION_LENGTH_IN_DIAGRAM, placeholder=f"[{len(footnotes)}]")
+                    cond2 = f"(? {cond2})"
+                    graph_data = graph_data + f"  {transition[CONF_FROM]} --> {transition[CONF_TO]}: {input[CONF_NAME]}{cond2}{os.linesep}"
+                else:
+                    graph_data = graph_data + f"  {transition[CONF_FROM]} --> {transition[CONF_TO]}: {input[CONF_NAME]}{os.linesep}"
+
+
+    if footnotes:
+        graph_data = graph_data + f"note: legend{os.linesep}"
+
+    for i in footnotes:
+        graph_data = graph_data + f"note: {i}{os.linesep}"
+
 
     graph_url = "" # f"https://quickchart.io/graphviz?format=svg&graph={urllib.parse.quote(graph_data)}"
 
