@@ -240,6 +240,7 @@ def output_mermaid_graph(config):
     for input in config[CONF_INPUTS_KEY]:
         if CONF_INPUT_TRANSITIONS_KEY in input:
             for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
+                # TODO: significant duplicated code with the DOT graph?
                 if CONF_CONDITION in transition and transition[CONF_CONDITION]:
                     cond, longcond = format_condition(transition[CONF_CONDITION])
 
@@ -256,26 +257,43 @@ def output_mermaid_graph(config):
     if footnotes:
         graph_data = graph_data + f"note: legend{os.linesep}"
 
-    for i in footnotes:
-        graph_data = graph_data + f"note: {i}{os.linesep}"
+        for i in footnotes:
+            graph_data = graph_data + f"note: {i}{os.linesep}"
 
 
     graph_url = "" # f"https://quickchart.io/graphviz?format=svg&graph={urllib.parse.quote(graph_data)}"
 
     if CONF_NAME in config:
-        _LOGGER.info(f"State Machine Diagram (for {config[CONF_NAME]}):{os.linesep}{graph_url}{os.linesep}")
+        _LOGGER.info(f"State Machine Diagram (for {config[CONF_NAME]}):{os.linesep}{graph_url}{os.linesep}{os.linesep}")
     else:
-        _LOGGER.info(f"State Machine Diagram:{os.linesep}{graph_url}{os.linesep}")
+        _LOGGER.info(f"State Machine Diagram:{os.linesep}{graph_url}{os.linesep}{os.linesep}")
 
     _LOGGER.info(f"Mermaid chart:{os.linesep}{graph_data}")
 
 def output_dot_graph(config):
     graph_data = f"digraph \"{config[CONF_NAME] if CONF_NAME in config else 'State Machine'}\" {{\n"
     graph_data = graph_data + "  node [shape=ellipse];\n"
+
+    # TODO do something with footnotes besides just log them.
+
+    footnotes = []
     for input in config[CONF_INPUTS_KEY]:
         if CONF_INPUT_TRANSITIONS_KEY in input:
             for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
-                graph_data = graph_data + f"  {transition[CONF_FROM]} -> {transition[CONF_TO]} [label={input[CONF_NAME]}];\n"
+
+                if CONF_CONDITION in transition and transition[CONF_CONDITION]:
+                    cond, longcond = format_condition(transition[CONF_CONDITION])
+
+                    if len(cond) > MAX_CONDITION_LENGTH_IN_DIAGRAM:
+                        footnotes.append(f'[{len(footnotes)+1}]: {longcond}')
+
+                    cond2 = textwrap.shorten(cond, MAX_CONDITION_LENGTH_IN_DIAGRAM, placeholder=f"[{len(footnotes)}]").replace(os.linesep, '')
+                    cond2 = f"(? {cond2})"
+
+                    graph_data = graph_data + f"  {transition[CONF_FROM]} -> {transition[CONF_TO]} [label=\"{input[CONF_NAME]}\\n{cond2}\"];\n"
+
+                else:
+                    graph_data = graph_data + f"  {transition[CONF_FROM]} -> {transition[CONF_TO]} [label={input[CONF_NAME]}];\n"
 
     graph_data = graph_data + "}"
     graph_url = f"https://quickchart.io/graphviz?format=svg&graph={urllib.parse.quote(graph_data)}"
@@ -286,6 +304,9 @@ def output_dot_graph(config):
         _LOGGER.info(f"State Machine Diagram:{os.linesep}{graph_url}{os.linesep}")
 
     _LOGGER.info(f"DOT language graph:{os.linesep}{graph_data}")
+
+    _LOGGER.info(f":{os.linesep}Footnotes:{os.linesep}{os.linesep.join(footnotes)}")
+
 
 def validate_transitions(config):  
     states = set(map(lambda x: x[CONF_NAME], config[CONF_STATES_KEY]))
