@@ -62,8 +62,11 @@ namespace esphome
 
       for (StateTransition &transition : this->transitions_)
       {
-        if (transition.from_state == this->current_state_ && transition.input == input)
-          return transition;
+        if (transition.from_state == this->current_state_ && transition.input == input) {
+          if (!transition.condition || transition.condition->check()) {
+            return transition;
+          }
+        }
       }
 
       return {};
