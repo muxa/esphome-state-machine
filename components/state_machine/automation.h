@@ -134,7 +134,7 @@ namespace esphome
         this->state_ = state;
       }
 
-      void play(Ts... x) override { this->parent_->set(this->state_); }
+      void play(const Ts &... x) override { this->parent_->set(this->state_); }
 
     protected:
       std::string state_;
@@ -149,7 +149,7 @@ namespace esphome
         this->input_ = input;
       }
 
-      void play(Ts... x) override { this->parent_->transition(this->input_); }
+      void play(const Ts &... x) override { this->parent_->transition(this->input_); }
 
     protected:
       std::string input_;
