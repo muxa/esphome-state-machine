@@ -134,7 +134,7 @@ namespace esphome
         this->state_ = state;
       }
 
-      void play(Ts... x) override { this->parent_->set(this->state_); }
+      void play(const Ts &... x) override { this->parent_->set(this->state_); }
 
     protected:
       std::string state_;
@@ -149,7 +149,7 @@ namespace esphome
         this->input_ = input;
       }
 
-      void play(Ts... x) override { this->parent_->transition(this->input_); }
+      void play(const Ts &... x) override { this->parent_->transition(this->input_); }
 
     protected:
       std::string input_;
@@ -163,7 +163,7 @@ namespace esphome
 
       TEMPLATABLE_VALUE(std::string, value)
 
-      bool check(Ts... x) override
+      bool check(const Ts &... x) override
       {
         return this->value_.value(x...) == this->parent_->current_state();
       }
@@ -182,7 +182,7 @@ namespace esphome
       TEMPLATABLE_VALUE(std::string, input)
       TEMPLATABLE_VALUE(std::string, to_state)
 
-      bool check(Ts... x) override
+      bool check(const Ts &... x) override
       {
         if (!this->parent_->last_transition().has_value())
           return false;
