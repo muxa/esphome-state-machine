@@ -1,7 +1,5 @@
 esphome:
   name: dual-switch-cover-example
-  platform: ESP8266
-  board: d1_mini
   on_boot:
     then:
       - logger.log: "BOOTING"
@@ -13,6 +11,9 @@ esphome:
           then:
             - logger.log: "Restoring sun tracker state"
             - state_machine.set: SUN_TRACKER_ON
+
+esp8266:
+  board: d1_mini
 
 logger:
   level: DEBUG
@@ -103,7 +104,7 @@ binary_sensor:
       number: D6
       mode: INPUT #_PULLUP
       inverted: False #True
-    name: "Open Button"
+    name: "Close Button"
     filters:
       - delayed_on: 100ms
     on_press:
