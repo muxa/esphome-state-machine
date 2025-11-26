@@ -1,9 +1,11 @@
 import logging
 import os
 import urllib.parse
+import textwrap
 import esphome.codegen as cg
 import esphome.config_validation as cv
 from esphome import automation
+from esphome.automation import validate_condition, build_condition
 
 from esphome.const import (
     CONF_ID,
@@ -12,7 +14,8 @@ from esphome.const import (
     CONF_FROM,
     CONF_TO,
     CONF_STATE,
-    CONF_VALUE
+    CONF_VALUE,
+    CONF_CONDITION
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -87,12 +90,19 @@ CONF_TRANSITION_TO_KEY = 'to'
 
 CONF_STATE_MACHINE_ID = 'state_machine_id'
 
+memorizer = dict()
+async def build_condition_(config):
+    if config['type_id'] not in memorizer:
+        memorizer[config['type_id']] = await build_condition(config, cg.TemplateArguments(), [])
+    return memorizer[config['type_id']]
+
 def validate_transition(value):
     if isinstance(value, dict):
         return cv.Schema(
             {
                 cv.Required(CONF_FROM): cv.string_strict,
                 cv.Required(CONF_TO): cv.string_strict,
+                cv.Optional(CONF_CONDITION): validate_condition,
                 cv.Optional(CONF_BEFORE_TRANSITION_KEY): automation.validate_automation(
                     {
                         cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(StateMachineBeforeTransitionTrigger),
@@ -118,6 +128,95 @@ def validate_transition(value):
     a, b = a.strip(), b.strip()
     return validate_transition({CONF_FROM: a, CONF_TO: b})
 
+
+def format_lambda(s):
+    s=s.strip()
+    if s.startswith('return'):
+        s = s[len('return'):]
+
+    if s.endswith(";"):
+        s = s[:-1]
+
+    return s.strip()
+
+
+def format_condition_argument(ca):
+    if 'id' in ca:
+        ca = ca['id']
+        if hasattr(ca, 'id'):
+            return ca.id
+    return ''
+
+def format_condition(c):
+    try:
+        v = ''
+        long = ''
+
+        if 'lambda' in c:
+            v = format_lambda(c['lambda'].value)
+        else:
+            c2 = c.copy()
+            for i in c:
+                if i in ['type_id', 'type', 'id', 'manual']:
+                    c2.pop(i)
+            
+            conditionname = None
+
+            for i in c2:
+                if "." in i:
+                    conditionname = i
+                    break
+
+            if not conditionname:
+                for i in c2:
+                    conditionname = i
+                    break
+
+            if conditionname in ("number.in_range", "sensor.in_range"):
+                v = c2[conditionname]['id'].id
+
+                # No spaces, we don't want it broken by the shortener and confusing anyone
+                if 'above' in c2[conditionname]:
+                    v = str(c2[conditionname]['above']) + "<" + v
+
+
+                if 'below' in c2[conditionname]:
+                    v = v + "<" + str(c2[conditionname]['below'])
+
+
+            else:
+                arg = format_condition_argument(c2[conditionname])
+                long = conditionname + " " + arg
+
+                conditionname = conditionname.split('.')
+
+
+
+
+                # If we have something like binary_sensor.is_on, the part before the dot
+                # needs to go to keep things short.
+                # But if it is something short already we can keep it.
+                if len(conditionname)==1:
+                    conditionname = conditionname[0]
+                else:
+                    suffix = conditionname[-1]
+                    p = '.'.join(conditionname[:-1])
+
+                    if len(p) < 7:
+                        conditionname = p + "." + suffix
+                    else:
+                        conditionname = suffix
+
+                v = conditionname + " " + arg
+     
+        v = v.strip()
+            
+        return (v, long or v)
+    except Exception as e:
+        _LOGGER.exception(f"Mermaid chart error:{e}")
+        return('','')
+
+
 def output_graph(config):
     if not CONF_DIAGRAM in config:
         return config
@@ -129,32 +228,72 @@ def output_graph(config):
 
     return config
 
+
+MAX_CONDITION_LENGTH_IN_DIAGRAM = 22
 def output_mermaid_graph(config):
     graph_data = f"stateDiagram-v2{os.linesep}"
     graph_data = graph_data + f"  direction LR{os.linesep}"
     initial_state = config[CONF_INITIAL_STATE] if CONF_INITIAL_STATE in config else config[CONF_STATES_KEY][0][CONF_NAME]
     graph_data = graph_data + f"  [*] --> {initial_state}{os.linesep}"
+    footnotes = []
+
     for input in config[CONF_INPUTS_KEY]:
         if CONF_INPUT_TRANSITIONS_KEY in input:
             for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
-                graph_data = graph_data + f"  {transition[CONF_FROM]} --> {transition[CONF_TO]}: {input[CONF_NAME]}{os.linesep}"
+                # TODO: significant duplicated code with the DOT graph?
+                if CONF_CONDITION in transition and transition[CONF_CONDITION]:
+                    cond, longcond = format_condition(transition[CONF_CONDITION])
+
+                    if len(cond) > MAX_CONDITION_LENGTH_IN_DIAGRAM:
+                        footnotes.append(f'[{len(footnotes)+1}] {longcond}').replace(os.linesep,'</br>')
+
+                    cond2 = textwrap.shorten(cond, MAX_CONDITION_LENGTH_IN_DIAGRAM, placeholder=f"[{len(footnotes)}]").replace(os.linesep, '')
+                    cond2 = f"(? {cond2})"
+                    graph_data = graph_data + f"  {transition[CONF_FROM]} --> {transition[CONF_TO]}: {input[CONF_NAME]}{cond2}{os.linesep}"
+                else:
+                    graph_data = graph_data + f"  {transition[CONF_FROM]} --> {transition[CONF_TO]}: {input[CONF_NAME]}{os.linesep}"
+
+
+    if footnotes:
+        graph_data = graph_data + f"note: legend{os.linesep}"
+
+        for i in footnotes:
+            graph_data = graph_data + f"note: {i}{os.linesep}"
+
 
     graph_url = "" # f"https://quickchart.io/graphviz?format=svg&graph={urllib.parse.quote(graph_data)}"
 
     if CONF_NAME in config:
-        _LOGGER.info(f"State Machine Diagram (for {config[CONF_NAME]}):{os.linesep}{graph_url}{os.linesep}")
+        _LOGGER.info(f"State Machine Diagram (for {config[CONF_NAME]}):{os.linesep}{graph_url}{os.linesep}{os.linesep}")
     else:
-        _LOGGER.info(f"State Machine Diagram:{os.linesep}{graph_url}{os.linesep}")
+        _LOGGER.info(f"State Machine Diagram:{os.linesep}{graph_url}{os.linesep}{os.linesep}")
 
     _LOGGER.info(f"Mermaid chart:{os.linesep}{graph_data}")
 
 def output_dot_graph(config):
     graph_data = f"digraph \"{config[CONF_NAME] if CONF_NAME in config else 'State Machine'}\" {{\n"
     graph_data = graph_data + "  node [shape=ellipse];\n"
+
+    # TODO do something with footnotes besides just log them.
+
+    footnotes = []
     for input in config[CONF_INPUTS_KEY]:
         if CONF_INPUT_TRANSITIONS_KEY in input:
             for transition in input[CONF_INPUT_TRANSITIONS_KEY]:
-                graph_data = graph_data + f"  {transition[CONF_FROM]} -> {transition[CONF_TO]} [label={input[CONF_NAME]}];\n"
+
+                if CONF_CONDITION in transition and transition[CONF_CONDITION]:
+                    cond, longcond = format_condition(transition[CONF_CONDITION])
+
+                    if len(cond) > MAX_CONDITION_LENGTH_IN_DIAGRAM:
+                        footnotes.append(f'[{len(footnotes)+1}]: {longcond}')
+
+                    cond2 = textwrap.shorten(cond, MAX_CONDITION_LENGTH_IN_DIAGRAM, placeholder=f"[{len(footnotes)}]").replace(os.linesep, '')
+                    cond2 = f"(? {cond2})"
+
+                    graph_data = graph_data + f"  {transition[CONF_FROM]} -> {transition[CONF_TO]} [label=\"{input[CONF_NAME]}\\n{cond2}\"];\n"
+
+                else:
+                    graph_data = graph_data + f"  {transition[CONF_FROM]} -> {transition[CONF_TO]} [label={input[CONF_NAME]}];\n"
 
     graph_data = graph_data + "}"
     graph_url = f"https://quickchart.io/graphviz?format=svg&graph={urllib.parse.quote(graph_data)}"
@@ -165,6 +304,9 @@ def output_dot_graph(config):
         _LOGGER.info(f"State Machine Diagram:{os.linesep}{graph_url}{os.linesep}")
 
     _LOGGER.info(f"DOT language graph:{os.linesep}{graph_data}")
+
+    _LOGGER.info(f":{os.linesep}Footnotes:{os.linesep}{os.linesep.join(footnotes)}")
+
 
 def validate_transitions(config):  
     states = set(map(lambda x: x[CONF_NAME], config[CONF_STATES_KEY]))
@@ -281,6 +423,7 @@ async def to_code(config):
                             ("from_state", transition[CONF_FROM]),
                             ("input", input[CONF_NAME]),
                             ("to_state", transition[CONF_TO]),
+                            ("condition", await build_condition_(transition[CONF_CONDITION]) if CONF_CONDITION in transition else cg.nullptr)
                         )
                     )
                 ) 
@@ -319,6 +462,7 @@ async def to_code(config):
                                 ("from_state", transition[CONF_FROM]),
                                 ("input", input[CONF_NAME]),
                                 ("to_state", transition[CONF_TO]),
+                                ("condition", await build_condition_(transition[CONF_CONDITION]) if CONF_CONDITION in transition else cg.nullptr)
                             )
                         )
                         await automation.build_automation(trigger, [], action)
@@ -347,6 +491,7 @@ async def to_code(config):
                                 ("from_state", transition[CONF_FROM]),
                                 ("input", input[CONF_NAME]),
                                 ("to_state", transition[CONF_TO]),
+                                ("condition", await build_condition_(transition[CONF_CONDITION]) if CONF_CONDITION in transition else cg.nullptr)
                             )
                         )
                         await automation.build_automation(trigger, [], action)
