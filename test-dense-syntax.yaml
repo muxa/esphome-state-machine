@@ -1,0 +1,137 @@
+esphome:
+  name: test-dense-syntax
+
+esp8266:
+  board: d1_mini
+
+logger:
+  level: DEBUG
+
+external_components:
+  - source: components
+
+# ---------------------------------------------------------------------------
+# Test state machine: 3-state traffic-light style machine
+#
+#   States: RED, YELLOW, GREEN
+#
+#   Inputs and transitions (using new shorthand syntax):
+#
+#   ADVANCE     RED -> GREEN     (normal)
+#               GREEN -> YELLOW  (normal)
+#               YELLOW -> RED    (normal)
+#
+#   RESET       GREEN,YELLOW ->  RED  (multi-source: both go to RED)
+#
+#   PAUSE       GREEN,YELLOW ->      (identity: each stays in its own state)
+#               RED ->               (identity: stay in RED)
+#
+# ---------------------------------------------------------------------------
+
+text_sensor:
+  - platform: state_machine
+    name: Traffic Light State Machine
+
+state_machine:
+  - name: Traffic Light State Machine
+    states:
+      - name: "RED"
+        on_enter:
+          - logger.log: "[RED] entered"
+        on_leave:
+          - logger.log: "[RED] leaving"
+
+      - name: "YELLOW"
+        on_enter:
+          - logger.log: "[YELLOW] entered"
+        on_leave:
+          - logger.log: "[YELLOW] leaving"
+
+      - name: "GREEN"
+        on_enter:
+          - logger.log: "[GREEN] entered"
+        on_leave:
+          - logger.log: "[GREEN] leaving"
+
+    inputs:
+      # -----------------------------------------------------------------------
+      # ADVANCE: step through RED -> GREEN -> YELLOW -> RED using plain syntax
+      # -----------------------------------------------------------------------
+      - name: ADVANCE
+        transitions:
+          - "RED -> GREEN"
+          - "GREEN -> YELLOW"
+          - "YELLOW -> RED"
+        on_input:
+          - logger.log: "ADVANCE input received"
+
+      # -----------------------------------------------------------------------
+      # RESET: multi-source shorthand – from GREEN or YELLOW, go to RED
+      #   expands to:
+      #     GREEN  -> RED
+      #     YELLOW -> RED
+      # -----------------------------------------------------------------------
+      - name: RESET
+        transitions:
+          - "GREEN,YELLOW -> RED"
+        on_input:
+          - logger.log: "RESET input received (GREEN or YELLOW -> RED)"
+
+      # -----------------------------------------------------------------------
+      # PAUSE: identity shorthand – every listed state stays in itself
+      #   "GREEN,YELLOW ->" expands to: GREEN -> GREEN, YELLOW -> YELLOW
+      #   "RED ->"          expands to: RED -> RED
+      # Combined they cover all three states.
+      # -----------------------------------------------------------------------
+      - name: PAUSE
+        transitions:
+          - "GREEN,YELLOW ->"
+          - "RED ->"
+        on_input:
+          - logger.log: "PAUSE input received (identity – state unchanged)"
+
+    diagram: mermaid
+
+# ---------------------------------------------------------------------------
+# Wire three buttons to the three inputs
+# ---------------------------------------------------------------------------
+binary_sensor:
+  - platform: gpio
+    pin:
+      number: D5
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Advance Button"
+    filters:
+      - delayed_on: 50ms
+    on_press:
+      - state_machine.transition: ADVANCE
+
+  - platform: gpio
+    pin:
+      number: D6
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Reset Button"
+    filters:
+      - delayed_on: 50ms
+    on_press:
+      - state_machine.transition: RESET
+
+  - platform: gpio
+    pin:
+      number: D7
+      mode: INPUT_PULLUP
+      inverted: True
+    name: "Pause Button"
+    filters:
+      - delayed_on: 50ms
+    on_press:
+      - state_machine.transition: PAUSE
+
+output:
+  - platform: gpio
+    pin:
+      number: D4
+      inverted: True
+    id: led1

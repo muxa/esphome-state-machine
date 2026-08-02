@@ -88,11 +88,22 @@ CONF_TRANSITION_TO_KEY = 'to'
 CONF_STATE_MACHINE_ID = 'state_machine_id'
 
 def validate_transition(value):
+    """Validate a single transition entry.
+
+    Supports:
+    - Comma-separated source states: ``a,b -> c`` (expands to two transitions)
+    - Empty target for identity transitions: ``a ->`` (stay in same state)
+    Both forms can be combined: ``a,b ->`` means each state stays in itself.
+
+    When the ``from`` field contains commas or the ``to`` field is empty the
+    entry is stored as-is here; the actual expansion into individual
+    ``{from, to}`` dicts is done by :func:`expand_transitions`.
+    """
     if isinstance(value, dict):
         return cv.Schema(
             {
                 cv.Required(CONF_FROM): cv.string_strict,
-                cv.Required(CONF_TO): cv.string_strict,
+                cv.Optional(CONF_TO, default=""): cv.string,
                 cv.Optional(CONF_BEFORE_TRANSITION_KEY): automation.validate_automation(
                     {
                         cv.GenerateID(CONF_TRIGGER_ID): cv.declare_id(StateMachineBeforeTransitionTrigger),
@@ -117,6 +128,27 @@ def validate_transition(value):
     a, b = value.split("->", 1)
     a, b = a.strip(), b.strip()
     return validate_transition({CONF_FROM: a, CONF_TO: b})
+
+
+def expand_transitions(transitions):
+    """Expand multi-source and identity transitions into individual dicts.
+
+    ``a,b -> c``  becomes  ``[{from: a, to: c}, {from: b, to: c}]``
+    ``a ->``       becomes  ``[{from: a, to: a}]``  (identity)
+    ``a,b ->``    becomes  ``[{from: a, to: a}, {from: b, to: b}]``
+    """
+    result = []
+    for transition in transitions:
+        sources = [s.strip() for s in transition[CONF_FROM].split(",") if s.strip()]
+        if not sources:
+            raise cv.Invalid("Transition 'from' must not be empty")
+        target = transition[CONF_TO]  # may be empty string = identity
+        # Carry over any automation keys (before_transition, on_transition, after_transition)
+        extra = {k: v for k, v in transition.items() if k not in (CONF_FROM, CONF_TO)}
+        for src in sources:
+            effective_to = target if target else src  # empty target → identity
+            result.append({CONF_FROM: src, CONF_TO: effective_to, **extra})
+    return result
 
 def output_graph(config):
     if not CONF_DIAGRAM in config:
@@ -180,6 +212,7 @@ def validate_transitions(config):
 
     return config
 
+
 def unique_names(items): 
     names = list(map(lambda x: x[CONF_NAME], items));
     if len(names) != len(set(names)):
@@ -227,7 +260,7 @@ CONFIG_SCHEMA = cv.All(
                         ),
                         cv.Optional(CONF_INPUT_ACTION_KEY): cv.invalid("`action` is deprecated. Please use `on_input` instead"),
                         cv.Optional(CONF_INPUT_TRANSITIONS_KEY): cv.All(
-                            cv.ensure_list(validate_transition), cv.Length(min=1)
+                            cv.ensure_list(validate_transition), expand_transitions, cv.Length(min=1)
                         ),
                     },
                     key=CONF_NAME

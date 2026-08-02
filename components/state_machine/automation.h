@@ -34,9 +34,9 @@ namespace esphome
         state_machine->add_before_transition_callback(
             [this, input](const StateTransition &transition)
             {
-              this->stop_action(); // stop any previous running actions
               if (transition.input == input)
               {
+                this->stop_action(); // stop any previous running actions
                 this->trigger();
               }
             });
@@ -50,9 +50,9 @@ namespace esphome
         state_machine->add_before_transition_callback(
             [this, for_transition](const StateTransition &transition)
             {
-              this->stop_action(); // stop any previous running actions
               if (transition.from_state == for_transition.from_state && transition.input == for_transition.input && transition.to_state == for_transition.to_state)
               {
+                this->stop_action(); // stop any previous running actions
                 this->trigger();
               }
             });
@@ -67,9 +67,13 @@ namespace esphome
         state_machine->add_before_transition_callback(
             [this, state](const StateTransition &transition)
             {
-              this->stop_action(); // stop any previous running actions
-              if (transition.from_state == state)
+              if (transition.to_state == state && transition.from_state != transition.to_state)
               {
+                this->stop_action(); // stop if we enter the state
+              }
+              if (transition.from_state != transition.to_state && transition.from_state == state)
+              {
+                this->stop_action(); // stop any previous running actions
                 this->trigger();
               }
             });
@@ -83,9 +87,9 @@ namespace esphome
         state_machine->add_before_transition_callback(
             [this, for_transition](const StateTransition &transition)
             {
-              this->stop_action(); // stop any previous running actions
               if (transition.from_state == for_transition.from_state && transition.input == for_transition.input && transition.to_state == for_transition.to_state)
               {
+                this->stop_action(); // stop any previous running actions
                 this->trigger();
               }
             });
@@ -100,9 +104,13 @@ namespace esphome
         state_machine->add_after_transition_callback(
             [this, state](const StateTransition &transition)
             {
-              this->stop_action(); // stop any previous running actions
-              if (transition.to_state == state)
+              if (transition.from_state == state && transition.from_state != transition.to_state)
               {
+                this->stop_action(); // stop if we leave the state
+              }
+              if (transition.from_state != transition.to_state && transition.to_state == state)
+              {
+                this->stop_action(); // stop any previous running actions
                 this->trigger();
               }
             });
@@ -116,9 +124,9 @@ namespace esphome
         state_machine->add_after_transition_callback(
             [this, for_transition](const StateTransition &transition)
             {
-              this->stop_action(); // stop any previous running actions
               if (transition.from_state == for_transition.from_state && transition.input == for_transition.input && transition.to_state == for_transition.to_state)
               {
+                this->stop_action(); // stop any previous running actions
                 this->trigger();
               }
             });
